@@ -1,0 +1,36 @@
+.laser-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 80px;
+}
+
+.laser {
+  display: flex;
+  justify-content: center;
+  font-style: italic;
+  letter-spacing: -0.05em;
+  gap: 0.25em;
+  width: 9.5em;
+  height: auto;
+  font-size: 2.25em;
+  font-weight: bold;
+  color: #fff;
+  background-color: #ff0000;
+}
+
+.laser-color {
+  color: yellow;
+}
+
+.laser-veloz {
+  font-weight: bold;
+  background: repeating-linear-gradient(#fff,
+      #fff 2px,
+      #ff0000 2px,
+      #ff0000 3px);
+  background-size: 100% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}

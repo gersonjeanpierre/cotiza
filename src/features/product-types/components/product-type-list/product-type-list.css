@@ -1,0 +1,111 @@
+/* src/app/features/product-types/components/product-type-list.component.scss */
+.product-type-list-container {
+  padding: 15px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-top: 20px;
+}
+
+h3 {
+  color: #333;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.loading-message,
+.error-message,
+.no-data-message {
+  text-align: center;
+  padding: 15px;
+  border-radius: 5px;
+  font-weight: bold;
+  margin-top: 15px;
+}
+
+.loading-message {
+  background-color: #e3f2fd;
+  color: #1565c0;
+}
+
+.error-message {
+  background-color: #ffebee;
+  color: #d32f2f;
+}
+
+.no-data-message {
+  background-color: #fffde7;
+  color: #fbc02d;
+}
+
+.table-responsive {
+  overflow-x: auto;
+  /* Permite scroll horizontal en tablas grandes */
+}
+
+.product-type-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+
+.product-type-table th,
+.product-type-table td {
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.product-type-table th {
+  background-color: #4CAF50;
+  /* Verde */
+  color: white;
+  font-weight: bold;
+}
+
+.product-type-table tbody tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.product-type-table tbody tr:hover {
+  background-color: #f1f1f1;
+}
+
+.active {
+  color: #28a745;
+  /* Verde Bootstrap */
+  font-weight: bold;
+}
+
+.inactive {
+  color: #dc3545;
+  /* Rojo Bootstrap */
+  font-weight: bold;
+}
+
+.btn {
+  padding: 6px 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85em;
+  margin-right: 5px;
+  transition: background-color 0.3s ease;
+}
+
+.btn-edit {
+  background-color: #007bff;
+  /* Azul Bootstrap */
+  color: white;
+}
+
+.btn-delete {
+  background-color: #dc3545;
+  /* Rojo Bootstrap */
+  color: white;
+}
+
+.btn:hover {
+  opacity: 0.9;
+}

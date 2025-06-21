@@ -1,4 +1,4 @@
-import { Routes} from "@angular/router";
+import { Routes } from "@angular/router";
 import { ProductList } from "./product-list/product-list";
 import { ExtraOption } from "./extra-option/extra-option";
 

@@ -14,11 +14,26 @@
     "importHelpers": true,
     "target": "ES2022",
     "module": "preserve",
-       "baseUrl": "./",
+    "baseUrl": "./",
     "paths": {
-      "@app/*": ["src/app/*"],
-      "@assets/*": ["src/assets/*"],
-      "@env/*": ["src/environments/*"],
+      "@app/*": [
+        "src/app/*"
+      ],
+      "@assets/*": [
+        "src/assets/*"
+      ],
+      "@env/*": [
+        "src/environment/*"
+      ],
+      "@shared/*": [
+        "src/shared/*"
+      ],
+      "@core/*": [
+        "src/core/*"
+      ],
+      "@features/*": [
+        "src/features/*"
+      ],
     }
   },
   "angularCompilerOptions": {
