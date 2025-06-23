@@ -1,0 +1,49 @@
+<div class="product-list-container">
+  <h2>Productos Disponibles</h2>
+  @if (productTypeId) {
+  <p>Selecciona un producto del tipo (ID: {{ productTypeId }}) para tu cotización.</p>
+  }
+  @if (!productTypeId) {
+  <p>Por favor, selecciona un tipo de producto para ver los productos disponibles.</p>
+  }
+  @if (isLoading) {
+  <div class="loading-message">
+    <span class="loading-text">Cargando productos...</span>
+  </div>
+  }
+  @if (error) {
+  <div class="error-message">
+    <span class="error-text">{{ error }}</span>
+  </div>
+  }
+  @if (!isLoading && !error && allProducts.length > 0) {
+  <div class="product-grid">
+    @for (product of allProducts; track $index) {
+    <div (click)="onSelectProduct(product)">
+      <h3>{{ product.name }}</h3>
+      <p>{{ product.description || 'Sin descripción' }}</p>
+      <div class="product-details">
+        <span class="product-sku">SKU: {{ product.sku }}</span>
+        <span class="product-unit">Unidad: {{ product.unity_measure }}</span>
+      </div>
+      <div class="product-price">
+        Precio: <span>{{ product.price | currency:'USD':'symbol':'1.2-2' }}</span>
+      </div>
+      <button class="select-button">Seleccionar</button>
+    </div>
+    }
+  </div>
+  }
+
+
+  @if (!isLoading && !error && allProducts.length === 0) {
+
+  <div class="no-data-message">
+    No hay productos disponibles para este tipo de producto.
+  </div>
+  }
+
+  @if (error) {
+  <div class="alert alert-error">{{ error }}</div>
+  }
+</div>

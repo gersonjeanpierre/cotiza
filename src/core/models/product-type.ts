@@ -1,4 +1,5 @@
 export interface ProductType {
+  path: any;
   id: number;
   name: string;
   description: string | null;

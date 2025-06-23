@@ -22,8 +22,7 @@ export class ProductTypeService {
   getAllProductTypes(skip: number = 0, limit: number = 100): Observable<ProductType[]> {
     return this.http.get<ProductType[]>(`${this.apiUrl}?skip=${skip}&limit=${limit}`);
   }
-
-  // Puedes añadir otros métodos aquí (getById, create, update, delete) más adelante
-  // getProductTypeById(id: number): Observable<ProductType> { ... }
-  // createProductType(dto: CreateProductTypeDto): Observable<ProductType> { ... }
+  getProductTypeById(id: number): Observable<ProductType> {
+    return this.http.get<ProductType>(`${this.apiUrl}/${id}`);
+  }
 }
