@@ -8,7 +8,7 @@ import { ProductTypeService } from '@features/product-types/services/product-typ
 
 @Component({
   selector: 'app-product-list',
-  imports: [CurrencyPipe],
+  imports: [],
   templateUrl: './product-list.html',
   styleUrl: './product-list.css',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -19,7 +19,9 @@ export class ProductList implements OnInit {
   isLoading: boolean = true;
   error: string | null = null;
 
-  allProducts: Product[] = []; // Para almacenar todos los productos si es necesario
+  allProducts: Product[] = [];
+  productsChino: Product[] = [];
+  productsArclad: Product[] = [];
 
   constructor(
     private route: ActivatedRoute,
@@ -29,20 +31,6 @@ export class ProductList implements OnInit {
     private cdr: ChangeDetectorRef,
     private indexedDBService: ProductIndexedDBService
   ) { }
-
-  // async ngOnInit(): Promise<void> {
-  //   this.route.paramMap.subscribe(async params => {
-  //     const id = params.get('productTypeId');
-  //     if (id) {
-  //       this.productTypeId = +id;
-  //       this.loadProducts(this.productTypeId);
-  //     } else {
-  //       this.error = 'Tipo de producto no especificado.';
-  //       this.isLoading = false;
-  //       this.cdr.detectChanges();
-  //     }
-  //   });
-  // }
 
   async ngOnInit(): Promise<void> {
     this.route.paramMap.subscribe(async params => {
@@ -74,6 +62,7 @@ export class ProductList implements OnInit {
       } else if (id) {
         this.productTypeId = +id;
         this.loadProducts(this.productTypeId);
+
       } else {
         this.error = 'Tipo de producto no especificado.';
         this.isLoading = false;
@@ -111,38 +100,26 @@ export class ProductList implements OnInit {
       product.product_types.some(pt => pt.id === productTypeId)
     );
     this.isLoading = false;
+    this.productsChino = this.filteredProductsChino();
+    this.productsArclad = this.filteredProductsArclad();
+    console.log('Path de la ruta:', this.router.url);
     this.cdr.detectChanges();
+
   }
-  // loadProducts(productTypeId: number): void {
-  //   this.isLoading = true;
-  //   this.error = null;
-  //   this.products = [];
-  //   this.allProducts = [];
 
-  //   this.productService.getAllProducts().subscribe({
-  //     next: (data) => {
-  //       // Filtra productos donde alguno de sus product_types tiene el id igual a productTypeId
-  //       this.allProducts = data.filter(product =>
-  //         Array.isArray(product.product_types) &&
-  //         product.product_types.some(pt => pt.id === productTypeId)
-  //       );
-  //       this.isLoading = false;
-  //       this.cdr.detectChanges();
-  //       console.log('Productos filtrados:', this.allProducts);
-  //     },
-  //     error: (err) => {
-  //       console.error('Error al cargar todos los productos:', err);
-  //       this.error = 'No se pudieron cargar todos los productos. Por favor, inténtelo de nuevo más tarde.';
-  //       this.isLoading = false;
-  //       this.cdr.detectChanges();
-  //     }
-  //   });
-
-  // }
+  filteredProductsChino() {
+    return this.allProducts.filter(product =>
+      product.name?.toLowerCase().includes('chino'))
+  }
+  filteredProductsArclad(): Product[] {
+    return this.allProducts.filter(product =>
+      product.name?.toLowerCase().includes('arclad'))
+  }
 
   onSelectProduct(product: Product): void {
-    console.log('Producto seleccionado:', product.name, 'SKU:', product.sku);
-    // Navegar al siguiente paso, pasando el ID del producto
-    this.router.navigate(['/cotizaciones/products', product.id]);
+    const currentPath = this.router.url;
+    const newPath = `${currentPath}/${product.id}`;
+    console.log('Navegando a:', newPath);
+    this.router.navigate([newPath]);
   }
 }

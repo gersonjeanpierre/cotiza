@@ -14,10 +14,6 @@ export const dashboardRoutes: Routes = [
       {
         path: 'overview', component: DashboardPage
       },
-      // {
-      //   path: 'cotizaciones',
-      //   loadChildren: () => import('../product-quotation/product-quotation.routes')
-      // },
       {
         path: 'cotizaciones',
         loadChildren: () => import('../quotations/quotations.routes')
