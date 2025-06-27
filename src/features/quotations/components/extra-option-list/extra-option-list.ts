@@ -1,18 +1,52 @@
-import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, inject, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ExtraOption } from '@core/models/extra-option';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { ProductIndexedDBService } from '@features/quotations/services/products-idb';
 import { CurrencyPipe } from '@angular/common';
 import { calculateCeltexFoamPrice, calculateLaborPrice } from '@shared/utils/extraOptionList';
+import { CustomerModal } from '@features/customer/components/customer-modal/customer-modal';
+import { Customer } from '@core/models/customer';
 
 @Component({
   selector: 'app-extra-option-list',
-  imports: [ReactiveFormsModule, CurrencyPipe],
+  imports: [ReactiveFormsModule, CurrencyPipe, CustomerModal],
   templateUrl: './extra-option-list.html',
   styleUrl: './extra-option-list.css'
 })
-export class ExtraOptionList implements OnInit {
+export class ExtraOptionList implements OnInit, AfterViewInit {
+
+  // Obtener una referencia al componente del modal
+  @ViewChild('customerModalRef') customerModalComponent!: CustomerModal;
+
+  selectedCustomer: Customer | null = null;
+
+  ngAfterViewInit(): void {
+    // Es una buena práctica verificar que la referencia ya esté disponible
+    console.log('Referencia al modal de clientes:', this.customerModalComponent);
+  }
+
+  // Método para abrir el modal desde el botón
+  openCustomerModal(): void {
+    // Llama al método `openModal()` del componente hijo para mostrar el modal
+    if (this.customerModalComponent) {
+      this.customerModalComponent.openModal();
+    }
+  }
+
+  // Método que se ejecuta cuando el modal emite un cliente seleccionado
+  onCustomerSelected(customer: Customer): void {
+    this.selectedCustomer = customer;
+    console.log('Cliente seleccionado:', this.selectedCustomer);
+    // Aquí puedes hacer lo que necesites con el cliente seleccionado (ej. guardarlo en un formulario)
+  }
+
+  // Método para refrescar la lista de clientes si algo cambia en el modal
+  refreshCustomerList(): void {
+    console.log('Refrescando la lista de clientes...');
+    // Si necesitas recargar datos adicionales en el componente padre, hazlo aquí.
+    // El modal ya se encarga de refrescar su propia lista.
+  }
 
   constructor(
     private route: ActivatedRoute,

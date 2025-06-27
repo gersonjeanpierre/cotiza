@@ -1,10 +1,10 @@
-import { Injectable } from '@angular/core';
-import { Product } from '@core/models/product';
+import { Injectable } from "@angular/core";
+import { TypeClient } from "@core/models/customer";
 
 @Injectable({ providedIn: 'root' })
-export class ProductIndexedDBService {
-  private dbName = 'productsDB';
-  private productsStore = 'products';
+export class TypeClientIndexedDBService {
+  private dbName = 'typeClientsDB';
+  private typeClientsStore = 'typeClients';
   private metaStore = 'meta';
 
   private openDB(): Promise<IDBDatabase> {
@@ -12,8 +12,8 @@ export class ProductIndexedDBService {
       const request = indexedDB.open(this.dbName, 1);
       request.onupgradeneeded = () => {
         const db = request.result;
-        if (!db.objectStoreNames.contains(this.productsStore)) {
-          db.createObjectStore(this.productsStore, { keyPath: 'id' });
+        if (!db.objectStoreNames.contains(this.typeClientsStore)) {
+          db.createObjectStore(this.typeClientsStore, { keyPath: 'id' });
         }
         if (!db.objectStoreNames.contains(this.metaStore)) {
           db.createObjectStore(this.metaStore);
@@ -24,26 +24,26 @@ export class ProductIndexedDBService {
     });
   }
 
-  async saveProducts(products: Product[]): Promise<void> {
+  async saveTypeClients(typeClients: TypeClient[]): Promise<void> {
     const db = await this.openDB();
     return new Promise<void>((resolve, reject) => {
-      const tx = db.transaction([this.productsStore, this.metaStore], 'readwrite');
-      const store = tx.objectStore(this.productsStore);
+      const tx = db.transaction([this.typeClientsStore, this.metaStore], 'readwrite');
+      const store = tx.objectStore(this.typeClientsStore);
       store.clear();
-      products.forEach(product => store.put(product));
+      typeClients.forEach(typeClient => store.put(typeClient));
       tx.objectStore(this.metaStore).put(new Date().toISOString(), 'lastSync');
       tx.oncomplete = () => resolve();
       tx.onerror = () => reject(tx.error);
     });
   }
 
-  async getProducts(): Promise<Product[]> {
+  async getTypeClients(): Promise<TypeClient[]> {
     const db = await this.openDB();
-    return new Promise<Product[]>((resolve, reject) => {
-      const tx = db.transaction(this.productsStore, 'readonly');
-      const store = tx.objectStore(this.productsStore);
+    return new Promise<TypeClient[]>((resolve, reject) => {
+      const tx = db.transaction(this.typeClientsStore, 'readonly');
+      const store = tx.objectStore(this.typeClientsStore);
       const request = store.getAll();
-      request.onsuccess = () => resolve(request.result as Product[]);
+      request.onsuccess = () => resolve(request.result as TypeClient[]);
       request.onerror = () => reject(request.error);
     });
   }

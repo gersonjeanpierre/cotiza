@@ -73,7 +73,7 @@ export class SelectProductType implements OnInit {
     });
   }
 
-  async syncProductTypesIfNeeded() {
+  async syncProductTypesIfNeeded(): Promise<void> {
     const lastSync = await this.indexedDBService.getLastSync();
     const now = new Date();
     const today = now.toISOString().slice(0, 10);
@@ -87,6 +87,8 @@ export class SelectProductType implements OnInit {
         }
       });
     }
+    console.log('Sincronización de tipos de producto completada.');
+    console.log('types', this.indexedDBService.getProductTypes());
   }
 
   onSelectProductType(productType: ProductType): void {

@@ -1,3 +1,26 @@
+<app-customer-modal #customerModalRef (customerSelected)="onCustomerSelected($event)"
+  (customersChanged)="refreshCustomerList()">
+</app-customer-modal>
+
+<div class="mb-4">
+  <label class="label font-semibold">Cliente Seleccionado:</label>
+  <div class="flex items-center gap-4">
+    @if (selectedCustomer?.entity_type === 'J') {
+    <span class="text-lg font-medium">
+      {{ selectedCustomer ? (selectedCustomer.business_name) : 'Ninguno' }}
+    </span>
+
+    } @if (selectedCustomer?.entity_type === 'N') {
+    <span class="text-lg font-medium">
+      {{ selectedCustomer ? (selectedCustomer.name + ' ' + selectedCustomer.last_name) : 'Ninguno' }}
+    </span>
+    }
+    <button class="btn btn-outline btn-sm" (click)="openCustomerModal()">
+      {{ selectedCustomer ? 'Cambiar Cliente' : 'Seleccionar Cliente' }}
+    </button>
+  </div>
+</div>
+
 <h2 class="text-3xl font-bold mb-2">{{nameProduct}}</h2>
 <p class="font-medium mb-3">Precio Metro Lineal: {{ priceMetroLineal | currency: 'S/.' }}</p>
 <form [formGroup]="dimensionsForm" (ngSubmit)="onSubmit()" class="flex gap-5">

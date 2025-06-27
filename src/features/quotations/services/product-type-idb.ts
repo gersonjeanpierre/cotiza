@@ -3,7 +3,7 @@ import { ProductType } from '@core/models/product-type';
 
 @Injectable({ providedIn: 'root' })
 export class ProductTypeIndexedDBService {
-  private dbName = 'cotiza-db';
+  private dbName = 'productTypesDB';
   private productTypesStore = 'productTypes';
   private metaStore = 'meta';
 
