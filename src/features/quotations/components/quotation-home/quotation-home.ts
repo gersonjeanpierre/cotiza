@@ -1,10 +1,16 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { ProductType } from '@core/models/product-type';
-import { ProductTypeService } from '@features/product-types/services/product-type';
-import { ProductTypeIndexedDBService } from '@features/quotations/services/product-type-idb';
-import { ProductIndexedDBService } from '@features/quotations/services/products-idb';
+// Tipo de cliente
+import { TypeClientService } from '@features/type-client/service/type-client';
 import { TypeClientIndexedDBService } from '@features/quotations/services/type-client-idb';
+// Tipos de producto
+import { ProductTypeService } from '@features/product-types/service/product-type';
+import { ProductTypeIndexedDBService } from '@features/quotations/services/product-type-idb';
+// Productos
+import { ProductService } from '@features/product/service/product';
+import { ProductIndexedDBService } from '@features/quotations/services/products-idb';
+
+import { loadToIndexedDB } from '@shared/sync/dexie-db';
 
 @Component({
   selector: 'app-quotation-home',
@@ -18,26 +24,20 @@ export class QuotationHome implements OnInit {
     private router: Router,
     private productTypeService: ProductTypeService,
     private productTypeIDB: ProductTypeIndexedDBService,
+
+    private productService: ProductService,
+    private productsIDB: ProductIndexedDBService,
+
+    private typeClientService: TypeClientService,
     private typeClientIDB: TypeClientIndexedDBService,
-    private productsIDB: ProductIndexedDBService
   ) { }
 
   async ngOnInit(): Promise<void> {
-    // Cargar tipos de producto en IndexedDB
-    await this.cargarTiposDeProductoEnIndexedDB();
-    console.log('Tipos de producto cargados en IndexedDB', this.productTypeIDB.getProductTypes());
-  }
 
-  async cargarTiposDeProductoEnIndexedDB(): Promise<void> {
-    this.productTypeService.getAllProductTypes().subscribe({
-      next: async (data) => {
-        await this.productTypeIDB.saveProductTypes(data);
-      },
-      error: (error) => {
-        console.error('Error al cargar tipos de producto:', error);
+    await loadToIndexedDB(this.productTypeIDB, this.productTypeService);
+    await loadToIndexedDB(this.productsIDB, this.productService);
+    await loadToIndexedDB(this.typeClientIDB, this.typeClientService);
 
-      }
-    })
   }
 
   navigateToQuotation() {

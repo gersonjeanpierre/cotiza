@@ -22,10 +22,7 @@ export class ProductService {
   // }
 
   // Puedes añadir otros métodos CRUD aquí más adelante si la característica 'products' los necesita
-  getProductById(id: number): Observable<Product> {
-    return this.http.get<Product>(`${this.apiUrl}/${id}`);
-  }
-  getAllProducts(): Observable<Product[]> {
+  getAll(): Observable<Product[]> {
     return this.http.get<Product[]>(this.apiUrl);
   }
 

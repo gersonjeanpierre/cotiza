@@ -1,10 +1,9 @@
-// src/app/features/cotizacion/components/select-product-type.component.ts
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common'; // Para *ngIf, *ngFor
 import { ActivatedRoute, Router } from '@angular/router'; // Para la navegación programática
 
 import { ProductType } from '@core/models/product-type'; // Nuestro modelo
-import { ProductTypeService } from '@features/product-types/services/product-type'; // El servicio ya existente
+import { ProductTypeService } from '@features/product-types/service/product-type'; // El servicio ya existente
 import { ProductTypeIndexedDBService } from '@features/quotations/services/product-type-idb';
 
 @Component({
@@ -39,7 +38,7 @@ export class SelectProductType implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private cdr: ChangeDetectorRef,
-    private indexedDBService: ProductTypeIndexedDBService
+    private productTypeIDB: ProductTypeIndexedDBService
   ) { }
 
   async ngOnInit(): Promise<void> {
@@ -49,19 +48,22 @@ export class SelectProductType implements OnInit {
       console.log('ID del tipo de producto:', id);
       console.log('Nombre del tipo de producto:', url);
     });
-    this.loadProductTypes();
+    // this.loadProductTypes();
+    this.load()
+
   }
 
   loadProductTypes(): void {
     this.isLoading = true;
     this.error = null;
-    this.productTypeService.getAllProductTypes().subscribe({
+    this.productTypeService.getAll().subscribe({
       next: (data) => {
         this.productTypes = data.map(pt => ({
           ...pt,
           path: this.images.find(img => img.id === pt.id)?.path || '/images/default-product.webp'
         }));
         this.isLoading = false;
+        console.log('Tipos de producto cargados:', this.productTypes);
         this.cdr.detectChanges(); // Notifica a Angular que los datos han cambiado
       },
       error: (err) => {
@@ -73,22 +75,23 @@ export class SelectProductType implements OnInit {
     });
   }
 
-  async syncProductTypesIfNeeded(): Promise<void> {
-    const lastSync = await this.indexedDBService.getLastSync();
-    const now = new Date();
-    const today = now.toISOString().slice(0, 10);
-    const lastSyncDay = lastSync?.slice(0, 10);
+  load = async (): Promise<void> => {
+    this.isLoading = true;
+    this.error = null;
+    let pt = await this.productTypeIDB.getAll();
+    this.productTypes = pt.map((p) => {
+      return {
+        ...p,
+        path: this.images.find(img => img.id === p.id)?.path || '/images/default-product.webp'
 
-    if (lastSyncDay !== today) {
-      // Sincroniza con la API y guarda en indexedDB
-      this.productTypeService.getAllProductTypes().subscribe({
-        next: async (data) => {
-          await this.indexedDBService.saveProductTypes(data);
-        }
-      });
+      }
+    });
+    if (this.productTypes.length > 0) {
+      this.isLoading = false;
     }
-    console.log('Sincronización de tipos de producto completada.');
-    console.log('types', this.indexedDBService.getProductTypes());
+
+    this.cdr.detectChanges(); // Notifica a Angular que los datos han cambiado
+
   }
 
   onSelectProductType(productType: ProductType): void {

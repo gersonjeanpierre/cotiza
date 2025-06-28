@@ -19,10 +19,7 @@ export class ProductTypeService {
    * @param limit Número máximo de elementos a devolver (para paginación).
    * @returns Un Observable que emite un array de ProductType.
    */
-  getAllProductTypes(skip: number = 0, limit: number = 100): Observable<ProductType[]> {
+  getAll(skip: number = 0, limit: number = 100): Observable<ProductType[]> {
     return this.http.get<ProductType[]>(`${this.apiUrl}?skip=${skip}&limit=${limit}`);
-  }
-  getProductTypeById(id: number): Observable<ProductType> {
-    return this.http.get<ProductType>(`${this.apiUrl}/${id}`);
   }
 }

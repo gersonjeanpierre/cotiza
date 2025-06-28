@@ -90,7 +90,7 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
       const id = Number(params.get('productId'));
       console.log('ID del producto:', id);
       if (id) {
-        const allProducts = await this.indexedDBService.getProducts();
+        const allProducts = await this.indexedDBService.getAll();
         const extraOptions = allProducts.find(product => product.id === id)?.extra_options ?? [];
         this.priceMetroLineal = allProducts.find(product => product.id === id)?.price ?? 0;
         this.nameProduct = allProducts.find(product => product.id === id)?.name ?? '';
