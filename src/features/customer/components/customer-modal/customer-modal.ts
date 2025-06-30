@@ -83,8 +83,6 @@ export class CustomerModal implements OnInit {
     })
     );
 
-    console.log('Type Clients:', this.typeCLients);
-
     // --- LÓGICA PRINCIPAL DE ORDENAMIENTO, FILTRADO Y PAGINACIÓN CON RxJS ---
     const filteredCustomers = combineLatest([
       this.allCustomersSubject.asObservable(),

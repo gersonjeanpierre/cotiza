@@ -2,9 +2,12 @@
   (customersChanged)="refreshCustomerList()">
 </app-customer-modal>
 
-<div class="mb-4">
+<div class="flex gap-6 mb-4 outline-1 shadow-lg  rounded-lg p-5">
   <label class="label font-semibold">Cliente Seleccionado:</label>
   <div class="flex items-center gap-4">
+    @if (!selectedCustomer) {
+    <span class="text-lg font-medium">Ninguno</span>
+    }
     @if (selectedCustomer?.entity_type === 'J') {
     <span class="text-lg font-medium">
       {{ selectedCustomer ? (selectedCustomer.business_name) : 'Ninguno' }}
@@ -15,10 +18,16 @@
       {{ selectedCustomer ? (selectedCustomer.name + ' ' + selectedCustomer.last_name) : 'Ninguno' }}
     </span>
     }
-    <button class="btn btn-outline btn-sm" (click)="openCustomerModal()">
-      {{ selectedCustomer ? 'Cambiar Cliente' : 'Seleccionar Cliente' }}
-    </button>
   </div>
+  <label class="label font-semibold ">Tipo de Cliente:</label>
+  <div>
+    <span class="text-lg font-medium">
+      {{ selectedCustomer ? selectedCustomer.type_client.name : 'Ninguno' }}
+    </span>
+  </div>
+  <button class="btn btn-outline btn-sm btn-primary" (click)="openCustomerModal()">
+    {{ selectedCustomer ? 'Cambiar Cliente' : 'Seleccionar Cliente' }}
+  </button>
 </div>
 
 <h2 class="text-3xl font-bold mb-2">{{nameProduct}}</h2>

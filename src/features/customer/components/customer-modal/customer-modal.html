@@ -1,4 +1,4 @@
-<dialog #customerDialog id="customer_modal" class="modal">
+<dialog #customerDialog id="customer_modal" class="modal backdrop-blur-sm">
   <div class="modal-box w-11/12 max-w-5xl">
     <h3 class="font-bold text-lg mb-4">
       @if (currentView === 'list') {
@@ -161,7 +161,18 @@
               <span class="label-text">DNI</span>
             </label>
           </div>
-
+          <div class="form-control ">
+            <label class="floating-label">
+              <span class="label-text">RUC*</span>
+              <input type="text" formControlName="ruc" class="input input-bordered"
+                class="input input-lg placeholder-gray-400" placeholder="RUC" />
+              <!-- @if (customerForm.get('ruc')?.invalid && customerForm.get('ruc')?.touched) {
+              <label class="label text-error">
+                <span class="label-text-alt">RUC es obligatorio.</span>
+              </label>
+              } -->
+            </label>
+          </div>
           <div class="form-control">
             <label class="floating-label">
               <input type="text" formControlName="doc_foreign" class="input input-lg" placeholder="Doc. Extranjero"
@@ -169,6 +180,7 @@
               <span class="label-text">Doc. Extranjero</span>
             </label>
           </div>
+
 
           <div class="form-control ">
             <label class="floating-label">
