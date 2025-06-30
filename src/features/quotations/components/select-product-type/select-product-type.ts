@@ -42,13 +42,6 @@ export class SelectProductType implements OnInit {
   ) { }
 
   async ngOnInit(): Promise<void> {
-    this.route.paramMap.subscribe(params => {
-      const id = params.get('productTypeId');
-      const url = params.get('productTypeName');
-      console.log('ID del tipo de producto:', id);
-      console.log('Nombre del tipo de producto:', url);
-    });
-    // this.loadProductTypes();
     this.load()
 
   }

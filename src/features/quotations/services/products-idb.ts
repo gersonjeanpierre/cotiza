@@ -18,6 +18,10 @@ export class ProductIndexedDBService {
   count(): Promise<number> {
     return this.db.products.count();
   }
+
+  async getById(id: number): Promise<Product | undefined> {
+    return await this.db.products.get(id);
+  }
 }
 
 

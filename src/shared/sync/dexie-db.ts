@@ -4,9 +4,9 @@ import { TypeClient } from '@core/models/type_client';
 import Dexie, { EntityTable } from 'dexie';
 
 export class CotizaDB extends Dexie {
-  type_clients!: EntityTable<TypeClient>
-  products!: EntityTable<Product>;
-  product_type!: EntityTable<ProductType>
+  type_clients!: EntityTable<TypeClient, 'id'>;
+  products!: EntityTable<Product, 'id'>;
+  product_type!: EntityTable<ProductType, 'id'>;
 
   constructor() {
     super('CotizaDB');

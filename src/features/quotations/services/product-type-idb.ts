@@ -16,6 +16,10 @@ export class ProductTypeIndexedDBService {
   count(): Promise<number> {
     return this.db.product_type.count();
   }
+
+  async getById(id: number): Promise<ProductType | undefined> {
+    return await this.db.product_type.get(id);
+  }
 }
 
 

@@ -22,4 +22,8 @@ export class ProductTypeService {
   getAll(skip: number = 0, limit: number = 100): Observable<ProductType[]> {
     return this.http.get<ProductType[]>(`${this.apiUrl}?skip=${skip}&limit=${limit}`);
   }
+
+  getProductTypeById(id: number): Observable<ProductType> {
+    return this.http.get<ProductType>(`${this.apiUrl}/${id}`);
+  }
 }

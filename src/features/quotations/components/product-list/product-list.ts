@@ -5,6 +5,7 @@ import { Product } from '@core/models/product';
 import { ProductService } from '@features/product/service/product';
 import { ProductIndexedDBService } from '../../services/products-idb';
 import { ProductTypeService } from '@features/product-types/service/product-type'
+import { ProductTypeIndexedDBService } from '@features/quotations/services/product-type-idb';
 
 @Component({
   selector: 'app-product-list',
@@ -26,75 +27,53 @@ export class ProductList implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private productService: ProductService,
-    private productTypeService: ProductTypeService,
     private cdr: ChangeDetectorRef,
-    private indexedDBService: ProductIndexedDBService
+    private productTypeIDBService: ProductTypeIndexedDBService,
+    private productIndexedDBService: ProductIndexedDBService
   ) { }
 
   async ngOnInit(): Promise<void> {
-    // this.route.paramMap.subscribe(async params => {
-    //   const id = params.get('productTypeId');
-    //   const urlName = params.get('productTypeName');
-    //   if (id && urlName) {
-    //     // Valida el nombre real del tipo de producto
-    //     this.productTypeService.getProductTypeById(+id).subscribe({
-    //       next: (productType) => {
-    //         const realName = productType.name
-    //           .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-    //           .toLowerCase()
-    //           .replace(/\s+/g, '-');
-    //         if (urlName === realName) {
-    //           this.productTypeId = +id;
-    //           this.loadProducts(this.productTypeId);
-    //         } else {
-    //           this.error = 'No existe el tipo de producto solicitado.';
-    //           this.isLoading = false;
-    //           this.cdr.detectChanges();
-    //         }
-    //       },
-    //       error: () => {
-    //         this.error = 'No existe el tipo de producto solicitado.';
-    //         this.isLoading = false;
-    //         this.cdr.detectChanges();
-    //       }
-    //     });
-    //   } else if (id) {
-    //     this.productTypeId = +id;
-    //     this.loadProducts(this.productTypeId);
+    this.route.paramMap.subscribe(async params => {
+      const id = params.get('productTypeId');
+      const urlName = params.get('productTypeName');
+      if (id && urlName) {
+        const productType = await this.productTypeIDBService.getById(+id);
+        if (productType) {
+          const realName = productType.name
+            .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+            .toLowerCase()
+            .replace(/\s+/g, '-');
+          if (urlName === realName) {
+            this.productTypeId = +id;
+            this.loadProducts(this.productTypeId);
+          } else {
+            this.error = 'No existe el tipo de producto solicitado.';
+            this.isLoading = false;
+            this.cdr.detectChanges();
+          }
+        } else {
+          this.error = 'No existe el tipo de producto solicitado.';
+          this.isLoading = false;
+          this.cdr.detectChanges();
+        }
+      } else if (id) {
+        this.productTypeId = +id;
+        this.loadProducts(this.productTypeId);
 
-    //   } else {
-    //     this.error = 'Tipo de producto no especificado.';
-    //     this.isLoading = false;
-    //     this.cdr.detectChanges();
-    //   }
-    // });
+      } else {
+        this.error = 'Tipo de producto no especificado.';
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      }
+    });
   }
-
-
-  // async syncIfNeeded() {
-  //   const lastSync = await this.indexedDBService.getLastSync();
-  //   const now = new Date();
-  //   const today = now.toISOString().slice(0, 10);
-  //   const lastSyncDay = lastSync?.slice(0, 10);
-
-  //   if (lastSyncDay !== today) {
-  //     // Sincroniza con la API y guarda en indexedDB
-  //     this.productService.getAllProducts().subscribe({
-  //       next: async (data) => {
-  //         await this.indexedDBService.saveProducts(data);
-  //       }
-  //     });
-  //   }
-  // }
 
   async loadProducts(productTypeId: number) {
 
     this.isLoading = true;
     this.error = null;
-    this.products = [];
     this.allProducts = [];
-    const cached = await this.indexedDBService.getAll();
+    const cached = await this.productIndexedDBService.getAll();
     this.allProducts = cached.filter(product =>
       Array.isArray(product.product_types) &&
       product.product_types.some(pt => pt.id === productTypeId)

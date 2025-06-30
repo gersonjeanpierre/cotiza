@@ -88,14 +88,12 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
   async ngOnInit() {
     this.route.paramMap.subscribe(async params => {
       const id = Number(params.get('productId'));
-      console.log('ID del producto:', id);
       if (id) {
         const allProducts = await this.indexedDBService.getAll();
         const extraOptions = allProducts.find(product => product.id === id)?.extra_options ?? [];
         this.priceMetroLineal = allProducts.find(product => product.id === id)?.price ?? 0;
         this.nameProduct = allProducts.find(product => product.id === id)?.name ?? '';
         this.extraOption = extraOptions.sort((a, b) => a.id - b.id);
-        console.log('Extra Options:', this.extraOption);
         this.cdr.detectChanges();
       }
 

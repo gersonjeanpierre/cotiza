@@ -5,6 +5,8 @@ import { CustomerService } from '@features/customer/service/customer';
 import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, map, startWith, tap } from 'rxjs';
 import { Observable } from 'rxjs/internal/Observable';
 import { AsyncPipe } from '@angular/common';
+import { TypeClientIndexedDBService } from '@features/quotations/services/type-client-idb';
+import { TypeClient } from '@core/models/type_client';
 
 @Component({
   selector: 'app-customer-modal',
@@ -43,10 +45,14 @@ export class CustomerModal implements OnInit {
   customerForm: FormGroup; // Formulario reactivo para crear/editar clientes
   searchForm: FormGroup;
 
+  // Type Client
+  typeCLients: { id: number, name: string }[] = [];
+
   constructor(
     private customerService: CustomerService,
     private fb: FormBuilder,
     private cdr: ChangeDetectorRef,
+    private typeClientIDBService: TypeClientIndexedDBService
   ) {
     this.searchForm = this.fb.group({
       search: this.fb.control<string>('', Validators.required)
@@ -64,12 +70,20 @@ export class CustomerModal implements OnInit {
       email: this.fb.control<string | null>(null),
     })
 
+
   }
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     // Suscribir a los cambios del tipo de entidad para actualizar validaciones
     this.updateFormValidators(this.customerForm.get('entity_type')?.value);
     this.customerForm.get('entity_type')?.valueChanges.subscribe(type => this.updateFormValidators(type));
+    this.typeCLients = (await this.typeClientIDBService.getAll()).map(typeClient => ({
+      id: typeClient.id,
+      name: typeClient.name
+    })
+    );
+
+    console.log('Type Clients:', this.typeCLients);
 
     // --- LÓGICA PRINCIPAL DE ORDENAMIENTO, FILTRADO Y PAGINACIÓN CON RxJS ---
     const filteredCustomers = combineLatest([
