@@ -21,7 +21,11 @@ export interface CartItem {
 export interface ProductExtraOption {
   id?: number;
   extra_option_id: number;
-  quantity: number;
+  quantity: number | null;
   linear_meter?: number | null;
+  width?: number | null;
 }
 
+export interface DisplayCartItem {
+
+}

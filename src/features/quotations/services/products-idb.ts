@@ -22,6 +22,8 @@ export class ProductIndexedDBService {
   async getById(id: number): Promise<Product | undefined> {
     return await this.db.products.get(id);
   }
+
+
 }
 
 

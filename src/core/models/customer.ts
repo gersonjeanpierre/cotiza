@@ -1,7 +1,5 @@
-export interface TypeClient {
-  id: number;
-  name: string;
-}
+import { TypeClient } from "./type_client";
+
 
 export interface Customer {
   id: number;

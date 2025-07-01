@@ -4,7 +4,7 @@ import { ExtraOption } from '@core/models/extra-option';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { ProductIndexedDBService } from '@features/quotations/services/products-idb';
 import { CurrencyPipe } from '@angular/common';
-import { calculateCeltexFoamPrice, calculateLaborPrice } from '@shared/utils/extraOptionList';
+import { calculateCeltexFoamPriceAndSheets, calculateLaborPrice } from '@shared/utils/extraOptionList';
 import { CustomerModal } from '@features/customer/components/customer-modal/customer-modal';
 import { Customer } from '@core/models/customer';
 import { CartItem, ProductExtraOption } from '@core/models/cart';
@@ -88,6 +88,8 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
   selectedLaminadoId: number | null = null;
   selectedCeltexFoamId: number | null = null;
   selectedManoDeObraId: number = 14;
+
+  quantityExtraOption: number = 1;
 
 
   private formBuilder = inject(FormBuilder);
@@ -173,16 +175,25 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
     const widthCeltexFoam = this.extraOptionForm.get('width')?.value ?? 0;
     const heightCeltexFoam = this.extraOptionForm.get('height')?.value ?? 0;
 
-    let cf = calculateCeltexFoamPrice(heightCeltexFoam, widthCeltexFoam, priceCeltexFoam)
+    let cf = calculateCeltexFoamPriceAndSheets(heightCeltexFoam, widthCeltexFoam, priceCeltexFoam)
+    this.quantityExtraOption = cf.sheetsUsed;
     let labor = parseInt(calculateLaborPrice(heightCeltexFoam, widthCeltexFoam, manoDeObraPrice).toFixed(2));
 
-    this.extraOptionForm.get('manoDeObra')?.setValue(labor);
+    this.extraOptionForm.get('manoDeObra')?.setValue(this.selectedManoDeObraId);
 
     console.log('########### Precios Opciones Extra ###########');
     console.log('Precio Laminado:', laminadoPrice);
     console.log('Precio Celtex Foam Calculado:', cf);
     console.log('Precio Mano de Obra Calculado:', labor);
     console.log('Extra Options Form', this.extraOptionForm?.value);
+
+    console.log('########### Fin Precios Opciones Extra ###########');
+    this.setCartExtraOption(this.selectedLaminadoId ?? 0);
+    this.setCartExtraOption(this.selectedCeltexFoamId ?? 0);
+
+    console.log('Cart Extra Options:', this.cartExtraOptions);
+
+    this.cartIDBService.saveCartExtraOptions(this.cartExtraOptions, this.cartId, this.productId)
 
   }
 
@@ -201,6 +212,32 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
       manoDeObra: null,
     });
     this.cdr.detectChanges();
+  }
+
+  setCartExtraOption(id: number) {
+    const extraform = this.extraOptionForm.value;
+    if (id >= 5 && id <= 8) { // Laminados
+      this.cartExtraOptions.push({
+        extra_option_id: id,
+        quantity: this.quantity ?? null,
+        linear_meter: this.height ?? null,
+        width: this.width ?? null,
+      })
+    }
+    if (id >= 10 && id <= 13) { // Foam Celtex
+      this.cartExtraOptions.push({
+        extra_option_id: id,
+        quantity: (this.quantity * this.quantityExtraOption),
+        linear_meter: this.height ?? null,
+        width: extraform.width ?? null,
+      })
+      this.cartExtraOptions.push({
+        extra_option_id: 14, // Mano de Obra
+        quantity: (this.quantity * this.quantityExtraOption),
+        linear_meter: this.height ?? null,
+        width: extraform.width ?? null,
+      })
+    }
   }
 
 

@@ -5,5 +5,11 @@
     </form>
     <h3 class="text-lg font-bold">Hello!</h3>
     <p class="py-4">Press ESC key or click on ✕ button to close</p>
+
+    <div class="flex flex-col gap-4">
+      <h1>CustomerID: {{cart?.customer_id}}</h1>
+      <p>Margen de ganacia: {{cart?.customer?.type_client?.margin}}</p>
+    </div>
+
   </div>
 </dialog>

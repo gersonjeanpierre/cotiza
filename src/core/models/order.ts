@@ -26,6 +26,7 @@ export interface DetailExtraOption {
   extra_option_id: number;
   quantity?: number;
   linear_meter?: number | null;
+  width?: number | null;
 }
 
 

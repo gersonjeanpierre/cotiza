@@ -5,51 +5,55 @@
  * @param baseSheetPrice The base price of a single Celtex Foam sheet.
  * @returns The calculated final cost in soles, or 0 if dimensions are not compatible.
  */
-export function calculateCeltexFoamPrice(
+export function calculateCeltexFoamPriceAndSheets(
   vinylLengthMeters: number,
   vinylWidthMeters: number,
   baseSheetPrice: number
-): number {
+): { cost: number; sheetsUsed: number } {
   const sheetLength = 2.4; // meters
   const sheetWidth = 1.2; // meters
   const totalSheetArea = sheetLength * sheetWidth; // m²
 
-  console.log(`Área total de la plancha: ${totalSheetArea.toFixed(2)} m²`);
-
   if (totalSheetArea === 0) {
-    console.log('Error: Área total de la plancha es cero.');
-    return 0;
+    return { cost: 0, sheetsUsed: 0 };
   }
 
   if (vinylWidthMeters > 1.5) {
-    console.log('El ancho del vinil es como maximo 1.5m.');
-    return 0;
+    return { cost: 0, sheetsUsed: 0 };
   }
+
+  let cost = 0;
+  let sheetsUsed = 0;
 
   // --- Cases where vinyl width is less than or equal to the sheet width (<= 1.2m) ---
   if (vinylWidthMeters <= sheetWidth) {
     if (vinylWidthMeters <= 0.6) {
       if (vinylLengthMeters > 1.2 && vinylLengthMeters <= 2.4) {
-        const cost = baseSheetPrice / 2;
-        return cost;
+        cost = baseSheetPrice / 2;
+        sheetsUsed = 0.5;
+        return { cost, sheetsUsed };
       } else if (vinylLengthMeters > 2.4 && vinylLengthMeters <= 4.8) {
-        const cost = baseSheetPrice;
-        return cost;
+        cost = baseSheetPrice;
+        sheetsUsed = 1;
+        return { cost, sheetsUsed };
       }
     }
 
     if (vinylLengthMeters <= 1.2 && vinylWidthMeters > 0 && vinylWidthMeters <= 1.2) {
-      const cost = baseSheetPrice / 2;
-      return cost;
+      cost = baseSheetPrice / 2;
+      sheetsUsed = 0.5;
+      return { cost, sheetsUsed };
     }
 
     if (vinylWidthMeters > 0.6 && vinylWidthMeters <= 1.2) {
       if (vinylLengthMeters > 1.2 && vinylLengthMeters <= 2.4) {
-        const cost = baseSheetPrice;
-        return cost;
+        cost = baseSheetPrice;
+        sheetsUsed = 1;
+        return { cost, sheetsUsed };
       } else if (vinylLengthMeters > 2.4 && vinylLengthMeters <= 4.8) {
-        const cost = baseSheetPrice * 2;
-        return cost;
+        cost = baseSheetPrice * 2;
+        sheetsUsed = 2;
+        return { cost, sheetsUsed };
       }
     }
   }
@@ -57,26 +61,31 @@ export function calculateCeltexFoamPrice(
   // --- Cases where vinyl width is greater than sheet width but <= 1.5m ---
   if (vinylWidthMeters > sheetWidth && vinylWidthMeters <= 1.5) {
     if (vinylLengthMeters <= 1.2) {
-      const cost = baseSheetPrice * 0.625;
-      return cost;
+      cost = baseSheetPrice;
+      sheetsUsed = 1;
+      return { cost, sheetsUsed };
     }
 
     if (vinylLengthMeters > 1.2 && vinylLengthMeters <= 1.8) {
-      const cost = baseSheetPrice;
-      return cost;
+      cost = baseSheetPrice;
+      sheetsUsed = 1;
+      return { cost, sheetsUsed };
     } else if (vinylLengthMeters > 1.8 && vinylLengthMeters <= 2.7) {
-      const cost = baseSheetPrice * 1.5;
-      return cost;
+      cost = baseSheetPrice * 1.5;
+      sheetsUsed = 1.5;
+      return { cost, sheetsUsed };
     } else if (vinylLengthMeters > 2.7 && vinylLengthMeters <= 3) {
-      const cost = baseSheetPrice * 1.75;
-      return cost;
+      cost = baseSheetPrice * 2;
+      sheetsUsed = 2;
+      return { cost, sheetsUsed };
     } else if (vinylLengthMeters > 3 && vinylLengthMeters <= 3.6) {
-      const cost = baseSheetPrice * 2;
-      return cost;
+      cost = baseSheetPrice * 2;
+      sheetsUsed = 2;
+      return { cost, sheetsUsed };
     }
   }
-  console.log('El ancho del vinil no es compatible con las medidas de la plancha Celtex.');
-  return 0;
+
+  return { cost: 0, sheetsUsed: 0 };
 }
 
 /**
