@@ -1,0 +1,160 @@
+// Tabla para los productos finales
+Table products {
+  id int [pk, increment]
+  sku varchar(20) [not null, unique] // SKU del producto (ej. 'GIG-001', 'VIN-002')
+  name varchar(150) [not null]
+  description varchar(150) // Ampliado para descripciones más largas
+  unity_measure varchar(40) [not null] // Unidad de medida (ej. 'kg', 'litro', 'unidad', 'm2')
+  price decimal(10, 2) [not null] // Asegurar que el precio base no sea nulo
+  image_url varchar(150) // URL de la imagen del producto
+  create_at datetime [default: `now()`] // Valor por defecto
+  update_at datetime [default: `now()`] // Valor por defecto
+  delete_at datetime // Fecha de eliminación lógica
+}
+
+// Tabla para los tipos de productos
+Table product_types {
+  id int [pk, increment]
+  name varchar(255) [not null, unique]
+  description text
+  create_at datetime [default: `now()`]
+  delete_at datetime
+}
+
+// Tabla de unión para productos y sus tipos
+Table product_product_types {
+  product_id int [ref: > products.id]
+  product_type_id int [ref: > product_types.id]
+  create_at datetime [default: `now()`]
+  delete_at datetime
+  indexes {
+    (product_id, product_type_id) [pk]
+  }
+
+}
+
+// Tabla para las opciones extras
+Table extra_options {
+  id int [pk, increment]
+  name varchar(255) [not null, unique]
+  price decimal(10, 2) [not null] 
+  description text
+  create_at datetime [default: `now()`]
+  update_at datetime [default: `now()`]
+  delete_at datetime
+}
+
+// Tabla de unión para productos y sus opciones extras
+Table product_extra_options {
+  product_id int [ref: > products.id]
+  extra_option_id int [ref: > extra_options.id]
+  create_at datetime [default: `now()`]
+  delete_at datetime
+  indexes {
+    (product_id, extra_option_id) [pk]
+  }
+
+}
+
+// Tabla para los clientes
+Table customers {
+  id int [pk, increment]
+  type_client_id int [ref: > type_clients.id]
+  entity_type char(1) [not null] // 'N' para Persona Natural, 'J' para Persona Jurídica
+  ruc varchar(11) [unique] // RUC debe ser único si existe
+  dni varchar(8) [unique] // DNI debe ser único si existe
+  name varchar(35)
+  last_name varchar(40)
+  business_name varchar(150) // Razón social para Persona Jurídica
+  phone_number varchar(15)
+  email varchar(100) [unique] // Email único
+  create_at datetime [default: `now()`]
+  update_at datetime [default: `now()`]
+  delete_at datetime
+
+  // Mejoras: Índices para búsqueda rápida
+  indexes {
+    (ruc) [unique] // Para asegurar unicidad si no es nulo
+    (dni) [unique] // Para asegurar unicidad si no es nulo
+    (email) [unique] // Para asegurar unicidad si no es nulo
+  }
+
+}
+
+// Tabla para los tipos de cliente (ej. Final, Frecuente, Mayorista)
+Table type_clients {
+  id int [pk, increment]
+  code code(6) [not null, unique] // Ampliado a varchar(10) para códigos como 'FI-FIN', 'IM-FRE'
+  name varchar(50) [not null, unique] // Nombre descriptivo del tipo (ej. 'Cliente Final', 'Cliente Frecuente')
+  margin decimal(2,2) [not null] // Margen de descuento (ej. 0.05 para 5%, 0.10 para 10%). Ajustado a decimal(3,2) para porcentajes.
+  create_at datetime [default: `now()`]
+  update_at datetime [default: `now()`]
+  delete_at datetime
+}
+
+// Tabla para las tiendas o sucursales
+Table stores { // Renombrado a 'stores' para ser más consistente con plurales
+id int [pk, increment]
+code varchar(10) [unique] // Código de la tienda (ej. 'MAIN-STR')
+name varchar(100) [not null] // Nombre de la tienda
+address varchar(255) // Dirección de la tienda
+phone_number varchar(15) // Teléfono de la tienda
+email varchar(100) // Email de la tienda
+create_at datetime [default: `now()`]
+update_at datetime [default: `now()`]
+delete_at datetime
+}
+
+// Tabla para los pedidos
+Table orders {
+  id int [pk, increment]
+  customer_id int [ref: > customers.id] // Cliente que realiza el pedido
+  store_id int [ref: > stores.id] // Tienda donde se realizó el pedido
+  order_status_id int [ref: > order_status.id]
+  total_amount decimal(10, 2) [not null] // Monto total del pedido (se calcula con los detalles)
+  profit_margin decimal(10, 2) [not null] // Margen de ganancia del pedido
+  discount_applied decimal(10, 2) [default: 0.00] // Descuento aplicado al pedido  
+  final_amount decimal(10, 2) [not null] // Monto final a pagar por el cliente (incluye IGV)
+  payment_method varchar(50) // Método de pago (ej. 'Efectivo', 'Tarjeta', 'Transferencia')
+  shipping_address varchar(200) // Dirección de envío del pedido (si es diferente a la del cliente)
+  notes varchar(200) // Notas adicionales para el pedido
+  create_at datetime [default: `now()`]
+  update_at datetime [default: `now()`]
+  delete_at datetime
+}
+
+// Tabla para los detalles de cada pedido
+Table order_details {
+  id int [pk, increment]
+  order_id int [ref: > orders.id] // Pedido al que pertenece este detalle
+  product_id int [ref: > products.id] // Producto final en este detalle del pedido
+  height decimal(10, 2) // Altura del producto si aplica
+  width decimal(10, 2) // Ancho del producto si aplica
+  quantity int [not null]
+  linear_meter decimal(10, 2) 
+  subtotal decimal(10, 2) [not null] // Subtotal por esta línea de producto (quantity * (unit_price  + total_extra_options))
+  total_extra_options decimal(10, 2) [default: 0.00] // Total de las opciones extras aplicadas
+  create_at datetime [default: `now()`]
+  delete_at datetime
+}
+
+Table order_detail_extra_options {
+  order_detail_id int [ref: > order_details.id]
+  extra_option_id int [ref: > extra_options.id]
+  quantity decimal(10,2) [not null]
+  linear_meter decimal(10,2) // Medida lineal si aplica
+  indexes {
+    (order_detail_id, extra_option_id) [pk]
+  }
+}
+
+// Tabla para los estados del pedido
+Table order_status {
+  id int [pk, increment]
+  code varchar(10) [not null, unique] // Código del estado (ej. 'PEND', 'PROG', 'COMP')
+  name varchar(50) [not null, unique] // Nombre del estado (ej. 'Pendiente', 'En Progreso', 'Completado')
+  description text
+  create_at datetime [default: `now()`]
+  update_at datetime [default: `now()`]
+  delete_at datetime
+}

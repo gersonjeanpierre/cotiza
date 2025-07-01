@@ -1,0 +1,78 @@
+<div class="">
+  <h2>Productos Disponibles</h2>
+  @if (productTypeId) {
+  <p>Selecciona un producto del tipo (ID: {{ productTypeId }}) para tu cotización.</p>
+  }
+  @if (!productTypeId) {
+  <p>Por favor, selecciona un tipo de producto para ver los productos disponibles.</p>
+  }
+  @if (isLoading) {
+  <div class="loading-message">
+    <span class="loading-text">Cargando productos...</span>
+  </div>
+  }
+  @if (error) {
+  <div class="error-message">
+    <span class="error-text">{{ error }}</span>
+  </div>
+  }
+  @if (!isLoading && !error && allProducts.length == 1) {
+  @for (product of allProducts; track $index) {
+  <div class="card w-72 bg-base-100 card-md shadow-xl">
+    <div class="card-body">
+      <h2 class="card-title">{{ product.name }}</h2>
+      <p>{{ product.description || 'Sin descripción' }}</p>
+      <div class="justify-end card-actions">
+        <button class="btn btn-primary" (click)="onSelectProduct(product)">Seleccionar</button>
+      </div>
+    </div>
+  </div>
+  }
+  }
+  @if (!isLoading && !error && allProducts.length > 1) {
+  <div>
+    <span class="text-3xl font-bold">Chino</span>
+    <div class="flex flex-wrap gap-6 my-5">
+      @for (product of productsChino; track $index) {
+      <div class="card w-72 bg-base-100 card-md shadow-xl">
+        <div class="card-body">
+          <h2 class="card-title">{{ product.name }}</h2>
+          <p>{{ product.description || 'Sin descripción' }}</p>
+          <div class="justify-end card-actions">
+            <button class="btn btn-primary" (click)="onSelectProduct(product)">Seleccionar</button>
+          </div>
+        </div>
+      </div>
+      }
+    </div>
+  </div>
+  <div>
+    <span class="text-3xl font-bold ">Arclad</span>
+    <div class="flex flex-wrap gap-6 my-5">
+      @for (product of productsArclad; track $index) {
+      <div class="card w-72 bg-base-100 card-md shadow-xl">
+        <div class="card-body">
+          <h2 class="card-title">{{ product.name }}</h2>
+          <p>{{ product.description || 'Sin descripción' }}</p>
+          <div class="justify-end card-actions">
+            <button class="btn btn-primary" (click)="onSelectProduct(product)">Seleccionar</button>
+          </div>
+        </div>
+      </div>
+      }
+    </div>
+  </div>
+  }
+
+  @if (!isLoading && !error && allProducts.length === 0) {
+
+  <div class="no-data-message">
+    No hay productos disponibles para este tipo de producto.
+
+  </div>
+  }
+
+  @if (error) {
+  <div class="alert alert-error">{{ error }}</div>
+  }
+</div>

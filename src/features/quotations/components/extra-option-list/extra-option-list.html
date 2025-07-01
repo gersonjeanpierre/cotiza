@@ -1,0 +1,139 @@
+<app-customer-modal #customerModalRef (customerSelected)="onCustomerSelected($event)"
+  (customersChanged)="refreshCustomerList()">
+</app-customer-modal>
+
+<div class="flex gap-6 mb-4 outline-1 shadow-lg  rounded-lg p-5">
+  <label class="label font-semibold">Cliente Seleccionado:</label>
+  <div class="flex items-center gap-4">
+    @if (!selectedCustomer) {
+    <span class="text-lg font-medium">Ninguno</span>
+    }
+    @if (selectedCustomer?.entity_type === 'J') {
+    <span class="text-lg font-medium">
+      {{ selectedCustomer ? (selectedCustomer.business_name) : 'Ninguno' }}
+    </span>
+
+    } @if (selectedCustomer?.entity_type === 'N') {
+    <span class="text-lg font-medium">
+      {{ selectedCustomer ? (selectedCustomer.name + ' ' + selectedCustomer.last_name) : 'Ninguno' }}
+    </span>
+    }
+  </div>
+  <label class="label font-semibold ">Tipo de Cliente:</label>
+  <div>
+    <span class="text-lg font-medium">
+      {{ selectedCustomer ? selectedCustomer.type_client.name : 'Ninguno' }}
+    </span>
+  </div>
+  <button class="btn btn-outline btn-sm btn-primary" (click)="openCustomerModal()">
+    {{ selectedCustomer ? 'Cambiar Cliente' : 'Seleccionar Cliente' }}
+  </button>
+</div>
+
+<h2 class="text-3xl font-bold mb-2">{{nameProduct}}</h2>
+<p class="font-medium mb-3">Precio Metro Lineal: {{ priceMetroLineal | currency: 'S/.' }}</p>
+<form [formGroup]="dimensionsForm" (ngSubmit)="onSubmit()" class="flex gap-5">
+  <fieldset class="fieldset">
+    <legend class="fieldset-legend text-lg">Largo</legend>
+    <input type="number" class="input input-neutral rounded-2xl validator" required min="0.01" step="0.01" max=100
+      formControlName="height" />
+    <p class="validator-hint m-0">Ingresa un valor con 2 decimales</p>
+  </fieldset>
+  <fieldset class="fieldset">
+    <legend class="fieldset-legend text-lg">Ancho</legend>
+    <input type="number" class="input input-neutral rounded-2xl validator" required min="0.01" step="0.01" max="1.50"
+      formControlName="width" />
+    <p class="validator-hint m-0">Ingresa un valor menor a 1.5</p>
+  </fieldset>
+  <fieldset class="fieldset">
+    <legend class="fieldset-legend text-lg">Cantidad</legend>
+    <input type="number" class="input input-neutral rounded-2xl validator" required min="1" value="1"
+      formControlName="quantity" />
+    <p class="validator-hint m-0">Ingresa un valor entero.</p>
+  </fieldset>
+  <div class="flex flex-col justify-end gap-4">
+    <button class="btn btn-outline btn-primary" type="button" (click)="onClean()">Limpiar</button>
+    <button class="btn btn-outline btn-primary" type="submit">Calcular</button>
+  </div>
+</form>
+
+@if (isCalculating) {
+<div class="flex gap-5 mb-4">
+  <div class="flex flex-col gap-2">
+    <h3 class="text-xl font-bold">Precio</h3>
+    <p>Precio unitario: {{ priceUnit | currency: 'S/.' }}</p>
+    <p>Total: {{ priceQuantity | currency: 'S/.' }}</p>
+  </div>
+  <div class="flex flex-col gap-2">
+    <h3 class="text-xl font-bold">Area</h3>
+    <p>Area: {{ area }} m<sup>2</sup></p>
+  </div>
+</div>
+<div style="margin: 2rem 0; border: 2px solid #333; background: #e0e7ef;" [style.width.px]="width * 75"
+  [style.height.px]="height * 75">
+</div>
+}
+
+<form class="flex flex-col gap-5 mt-4" [formGroup]="extraOptionForm" (ngSubmit)="calculateExtraOptionPrice()">
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div>
+      <label class="font-bold block mb-2">Laminado (elige uno):</label>
+      @for (option of extraOption; track $index) {
+      @if (option.name.toLocaleLowerCase().includes('laminado')) {
+      <div class="mb-4">
+        <div class="flex flex-col gap-2">
+          <label class="flex items-center gap-2">
+            <input type="radio" [value]="option.id" class="radio radio-sm radio-neutral" formControlName="laminado" />
+            {{ option.name }}
+          </label>
+        </div>
+      </div>
+      }
+      }
+    </div>
+    <div>
+      <label class="font-bold block mb-2">Celtex o Foam (elige uno):</label>
+      @for (option of extraOption; track $index) {
+      @if (option.name.toLocaleLowerCase().includes('celtex') || option.name.toLocaleLowerCase().includes('foam')) {
+      <div class="mb-4">
+        <div class="flex flex-col gap-2">
+          <label class="flex items-center gap-2">
+            <input type="radio" [value]="option.id" class="radio radio-sm radio-neutral" formControlName="celtexFoam" />
+            {{ option.name }}
+          </label>
+        </div>
+      </div>
+      }
+      }
+
+    </div>
+  </div>
+  @if (extraOptionForm.get('celtexFoam')?.value) {
+  @for (option of extraOption; track $index) {
+  @if (option.name.toLowerCase().includes('mano de obra')) {
+  <div class="mb-4">
+    <div class="flex flex-col gap-2">
+      <label class="flex items-center gap-2">
+        {{ option.name }}
+      </label>
+    </div>
+    <div class="flex gap-4">
+      <fieldset class="fieldset">
+        <legend class="fieldset-legend text-lg">Largo</legend>
+        <input type="number" class="input input-neutral rounded-2xl validator" required min="0.01" step="0.01" max=100
+          formControlName="height" />
+        <p class="validator-hint m-0">Ingresa un valor con 2 decimales</p>
+      </fieldset>
+      <fieldset class="fieldset">
+        <legend class="fieldset-legend text-lg">Ancho</legend>
+        <input type="number" class="input input-neutral rounded-2xl validator" required min="0.01" step="0.01"
+          max="1.50" formControlName="width" />
+        <p class="validator-hint m-0">Ingresa un valor con 2 decimales</p>
+      </fieldset>
+    </div>
+  </div>
+  }
+  }
+  }
+  <button class="btn btn-outline btn-primary" type="submit">Agregar Extras</button>
+</form>
