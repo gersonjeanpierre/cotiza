@@ -8,6 +8,10 @@ import { calculateCeltexFoamPrice, calculateLaborPrice } from '@shared/utils/ext
 import { CustomerModal } from '@features/customer/components/customer-modal/customer-modal';
 import { Customer } from '@core/models/customer';
 import { CartItem, ProductExtraOption } from '@core/models/cart';
+import { Order } from '@core/models/order';
+import { Cart } from '@core/models/cart';
+import { CartIndexedDBService } from '@features/quotations/services/cart-idb';
+import { CustomerService } from '@features/customer/service/customer';
 
 @Component({
   selector: 'app-extra-option-list',
@@ -21,6 +25,12 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
   @ViewChild('customerModalRef') customerModalComponent!: CustomerModal;
 
   selectedCustomer: Customer | null = null;
+
+  cart: Cart[] = []
+  cartId: number = 0;
+  cartItem: CartItem[] = [];
+  cartExtraOptions: ProductExtraOption[] = [];
+
 
   ngAfterViewInit(): void {
     // Es una buena práctica verificar que la referencia ya esté disponible
@@ -39,8 +49,14 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
   onCustomerSelected(customer: Customer): void {
     this.selectedCustomer = customer;
     console.log('Cliente seleccionado:', this.selectedCustomer);
-    // Aquí puedes hacer lo que necesites con el cliente seleccionado (ej. guardarlo en un formulario)
+    console.log('Cliente seleccionado:', this.selectedCustomer.id);
+    this.cart.push({
+      customer_id: this.selectedCustomer.id,
+      customer: this.selectedCustomer,
+    })
+    this.cartIDBService.saveCart(this.cart)
   }
+
 
   // Método para refrescar la lista de clientes si algo cambia en el modal
   refreshCustomerList(): void {
@@ -51,9 +67,12 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
 
   constructor(
     private route: ActivatedRoute,
-    private indexedDBService: ProductIndexedDBService,
+    private productIDBService: ProductIndexedDBService,
+    private cartIDBService: CartIndexedDBService,
     private cdr: ChangeDetectorRef,
+    private customerService: CustomerService
   ) { }
+
   productId: number = 0;
   extraOption: ExtraOption[] = [];
   height: number = 0; // Esta variable es la que define el Metro Lineal
@@ -92,15 +111,26 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
       const id = Number(params.get('productId'));
       this.productId = id;
       if (id) {
-        const allProducts = await this.indexedDBService.getAll();
+        const allProducts = await this.productIDBService.getAll();
         const extraOptions = allProducts.find(product => product.id === id)?.extra_options ?? [];
         this.priceMetroLineal = allProducts.find(product => product.id === id)?.price ?? 0;
         this.nameProduct = allProducts.find(product => product.id === id)?.name ?? '';
         this.extraOption = extraOptions.sort((a, b) => a.id - b.id);
+
+        const lastCart = await this.cartIDBService.getLastCart();
+        this.cart = lastCart ? [lastCart] : [];
+        this.selectedCustomer = lastCart?.customer ?? null;
+        this.cartId = this.cart.find(cart => cart.customer_id === this.selectedCustomer?.id)?.id ?? 0;
+        console.log('Carrito cargado:', this.cart);
+        console.log('CART ID:', this.cartId);
+
+
+
+
         this.cdr.detectChanges();
       }
-
     })
+
   }
 
   onSubmit() {
@@ -116,7 +146,20 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
     console.log('Ancho:', this.width, 'Alto:', this.height);
     console.log('Form', this.dimensionsForm?.value)
 
-    // Aquí puedes manejar el envío del formulario
+    const cart_id = this.cart.find(cart => cart.customer_id === this.selectedCustomer?.id)?.id ?? 0;
+    console.log('cart', this.cart);
+    console.log('Cart ID:', cart_id);
+
+    this.cartItem = [{
+      product_id: this.productId,
+      height: this.height,
+      width: this.width,
+      quantity: this.quantity,
+      linear_meter: this.height,
+    }]
+
+    this.cartIDBService.saveCartItem(this.cartItem[0], cart_id)
+
   }
 
   calculateExtraOptionPrice() {
@@ -141,9 +184,6 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
     console.log('Precio Mano de Obra Calculado:', labor);
     console.log('Extra Options Form', this.extraOptionForm?.value);
 
-    const combined = this.getCombinedObject(); // o this.getCombinedObject();
-    console.log(combined);
-
   }
 
   onClean() {
@@ -163,71 +203,12 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
     this.cdr.detectChanges();
   }
 
-  getCombinedObject() {
-    return {
-      productId: this.productId,
-      dimensions: this.dimensionsForm.value,
-      extraOptions: this.extraOptionForm.value
-    };
+
+
+  async saveToCart() {
+    // const cartId = await db
   }
 
-  saveCartItem() {
-    const cartItem: CartItem[] = []
-    cartItem.push({
-      cart_id: 1, // Este valor debe ser dinámico según tu lógica de aplicación
-      product_id: this.productId,
-      height: this.height,
-      width: this.width,
-      quantity: this.quantity,
-      linear_meter: this.height
-    });
-  }
 
-//   async function saveOrderToDexie(order: any, db: CotizaDB) {
-//   // 1. Guardar el cart
-//   const cartId = await db.carts.add({
-//     customer_id: order.customer_id,
-//     total: order.final_amount
-//   });
-
-//   // 2. Guardar los cart_items y extra_options
-//   for (const detail of order.details) {
-//     const cartItemId = await db.cart_items.add({
-//       cart_id: cartId,
-//       product_id: detail.product_id,
-//       height: detail.height,
-//       width: detail.width,
-//       quantity: detail.quantity,
-//       linear_meter: detail.linear_meter
-//     });
-
-//     for (const opt of detail.extra_options) {
-//       await db.product_extra_options.add({
-//         cart_item_id: cartItemId,
-//         extra_option_id: opt.extra_option_id,
-//         quantity: opt.quantity,
-//         linear_meter: opt.linear_meter ?? null
-//       });
-//     }
-//   }
-// }
-
-// async function getCartWithItems(db: CotizaDB, cartId: number) {
-//   const cart = await db.carts.get(cartId);
-//   if (!cart) return null;
-
-//   const cart_items = await db.cart_items.where('cart_id').equals(cartId).toArray();
-
-//   // Para cada cart_item, obtener sus extra_options
-//   for (const item of cart_items) {
-//     (item as any).extra_options = await db.product_extra_options.where('cart_item_id').equals(item.id!).toArray();
-//   }
-
-//   return {
-//     ...cart,
-//     cart_items
-//   };
-// }
-  
 }
 

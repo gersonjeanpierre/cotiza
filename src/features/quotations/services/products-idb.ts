@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Product } from '@core/models/product';
-import { CotizaDB } from '../../../shared/sync/dexie-db';
+import { CotizaDB } from '@shared/sync/dexie-db';
 
 @Injectable({ providedIn: 'root' })
 export class ProductIndexedDBService {

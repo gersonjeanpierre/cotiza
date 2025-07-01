@@ -6,7 +6,6 @@ import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, map
 import { Observable } from 'rxjs/internal/Observable';
 import { AsyncPipe } from '@angular/common';
 import { TypeClientIndexedDBService } from '@features/quotations/services/type-client-idb';
-import { TypeClient } from '@core/models/type_client';
 
 @Component({
   selector: 'app-customer-modal',

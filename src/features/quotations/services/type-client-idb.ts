@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 import { TypeClient } from "@core/models/type_client";
-import { CotizaDB } from "../../../shared/sync/dexie-db";
+import { CotizaDB } from "@shared/sync/dexie-db";
 
 
 

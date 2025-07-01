@@ -9,8 +9,6 @@ export class CotizaDB extends Dexie {
   products!: EntityTable<Product, 'id'>;
   product_type!: EntityTable<ProductType, 'id'>;
   carts!: EntityTable<Cart, 'id'>;
-  cart_items!: EntityTable<CartItem, 'id'>;
-  product_extra_options!: EntityTable<ProductExtraOption, 'id'>;
 
   constructor() {
     super('CotizaDB');
@@ -18,14 +16,10 @@ export class CotizaDB extends Dexie {
       type_clients: '++id,code',
       products: '++id, sku',
       product_type: '++id, name',
-      carts: '++id, customer_id',
-      cart_items: '++id, cart_id, product_id',
-      product_extra_options: '++id, cart_item_id, extra_option_id'
+      carts: '++id, customer_id'
     });
   }
-
 }
-
 
 interface ApiService<T> {
   getAll: () => {
@@ -40,7 +34,6 @@ interface IDBService<T> {
   count: () => Promise<number>;
   saveAll: (data: T[]) => Promise<void>;
 }
-
 
 export const loadToIndexedDB = async<T>(
   IDB_SERVICE: IDBService<T>,
