@@ -14,7 +14,7 @@
             <th class="text-center">Nombre</th>
             <th class="text-center">Cantidad</th>
             <th class="text-center">P. Unit</th>
-            <th class="text-right">Importe</th>
+            <th class="text-center">Importe</th>
           </tr>
         </thead>
         <tbody>
@@ -27,24 +27,14 @@
               <span class="text-gray-500 font-medium">| Metro Lineal: {{p.linear_meter}} m</span>
               }
             </td>
-            <td class="text-center">{{p.quantity}}</td>
-            <td class="text-center">{{p.price | number:'1.2-2'}}</td>
+            <td>{{p.quantity}}</td>
+            <td class="text-right">{{p.price | number:'1.2-2'}}</td>
             <td class="text-right">{{p.quantity * p.price | number:'1.2-2'}}</td>
-            <td>
-              <button class="btn btn-xs btn-error" (click)="deleteCartItem(p.product_id)">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-                  <path fill="currentColor"
-                    d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6zm2.46-7.12l1.41-1.41L12 12.59l2.12-2.12l1.41 1.41L13.41 14l2.12 2.12l-1.41 1.41L12 15.41l-2.12 2.12l-1.41-1.41L10.59 14zM15.5 4l-1-1h-5l-1 1H5v2h14V4z" />
-                </svg>
-              </button>
-            </td>
           </tr>
           <tr>
-            @if (p.product_extra_options && p.product_extra_options.length > 0) {
             <td></td>
             <td></td>
             <td colspan="4" class="badge badge-neutral badge-outline ml-3 font-bold py-0">Extras</td>
-            }
           </tr>
           @for (extra of p.product_extra_options; track $index) {
           <tr>
@@ -59,8 +49,8 @@
 
                   }
             </td>
-            <td class="text-center">{{extra.quantity}}</td>
-            <td class="text-center">{{extra.price | number:'1.2-2' }}</td>
+            <td>{{extra.quantity}}</td>
+            <td class="text-right">{{extra.price | number:'1.2-2' }}</td>
             <td class="text-right">{{extra.quantity * extra.price | number:'1.2-2' }}</td>
           </tr>
           }

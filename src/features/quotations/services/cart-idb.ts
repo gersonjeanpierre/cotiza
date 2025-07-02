@@ -75,6 +75,7 @@ export class CartIndexedDBService {
     if (!item.product_extra_options) {
       item.product_extra_options = [];
     }
+
     // Actualiza o agrega las opciones extra
     for (const option of extraOptions) {
       const existingOptionIndex = item.product_extra_options.findIndex(opt => opt.extra_option_id === option.extra_option_id);
@@ -86,6 +87,48 @@ export class CartIndexedDBService {
         item.product_extra_options.push(option);
       }
     }
+    // Guarda el cart actualizado
+    await this.db.carts.put(cart);
+  }
+
+  async deleteCartExtraOption(cartId: number, productId: number, extraOptionId: number): Promise<void> {
+    const cart = await this.db.carts.get(cartId);
+    if (!cart) {
+      throw new Error(`El cart con ID ${cartId} no fue encontrado`);
+    }
+    if (!cart.items) {
+      throw new Error(`El cart con ID ${cartId} no tiene items`);
+    }
+    const itemIndex = cart.items.findIndex(item => item.product_id === productId);
+    if (itemIndex === -1) {
+      throw new Error(`El item con product_id ${productId} no fue encontrado en el cart con ID ${cartId}`);
+    }
+    const item = cart.items[itemIndex];
+    if (!item.product_extra_options) {
+      throw new Error(`El item con product_id ${productId} no tiene opciones extra`);
+    }
+
+    // Elimina la opción extra
+    item.product_extra_options = item.product_extra_options.filter(opt => opt.extra_option_id !== extraOptionId);
+    // Guarda el cart actualizado
+    await this.db.carts.put(cart);
+  }
+
+  async deleteCartItem(cartId: number, productId: number): Promise<void> {
+    const cart = await this.db.carts.get(cartId);
+    if (!cart) {
+      throw new Error(`El cart con ID ${cartId} no fue encontrado`);
+    }
+    if (!cart.items) {
+      throw new Error(`El cart con ID ${cartId} no tiene items`);
+    }
+    const itemIndex = cart.items.findIndex(item => item.product_id === productId);
+    if (itemIndex === -1) {
+      throw new Error(`El item con product_id ${productId} no fue encontrado en el cart con ID ${cartId}`);
+    }
+    // Elimina el item del carrito
+    cart.items.splice(itemIndex, 1);
+
     // Guarda el cart actualizado
     await this.db.carts.put(cart);
   }
