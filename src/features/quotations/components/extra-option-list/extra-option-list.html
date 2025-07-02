@@ -30,6 +30,7 @@
   </button>
 </div>
 
+@if (productExists && productTypeExists) {
 <h2 class="text-3xl font-bold mb-2">{{nameProduct}}</h2>
 <p class="font-medium mb-3">Precio Metro Lineal: {{ priceMetroLineal | currency: 'S/.' }}</p>
 <form [formGroup]="dimensionsForm" (ngSubmit)="onSubmit()" class="flex gap-5">
@@ -74,6 +75,7 @@
 </div>
 }
 
+
 <form class="flex flex-col gap-5 mt-4" [formGroup]="extraOptionForm" (ngSubmit)="calculateExtraOptionPrice()">
   <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
     <div>
@@ -105,7 +107,6 @@
       </div>
       }
       }
-
     </div>
   </div>
   @if (extraOptionForm.get('celtexFoam')?.value) {
@@ -137,3 +138,9 @@
   }
   <button class="btn btn-outline btn-primary" type="submit">Agregar Extras</button>
 </form>
+} @else {
+
+<div class="alert alert-warning mt-4">
+  El producto no existe o la ruta es inválida.
+</div>
+}

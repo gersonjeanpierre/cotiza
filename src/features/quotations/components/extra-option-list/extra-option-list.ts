@@ -73,6 +73,9 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
     private customerService: CustomerService
   ) { }
 
+  productExists: boolean = true;
+  productTypeExists: boolean = true;
+
   productId: number = 0;
   extraOption: ExtraOption[] = [];
   height: number = 0; // Esta variable es la que define el Metro Lineal
@@ -112,25 +115,51 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
     this.route.paramMap.subscribe(async params => {
       const id = Number(params.get('productId'));
       this.productId = id;
-      if (id) {
-        const allProducts = await this.productIDBService.getAll();
-        const extraOptions = allProducts.find(product => product.id === id)?.extra_options ?? [];
-        this.priceMetroLineal = allProducts.find(product => product.id === id)?.price ?? 0;
-        this.nameProduct = allProducts.find(product => product.id === id)?.name ?? '';
-        this.extraOption = extraOptions.sort((a, b) => a.id - b.id);
 
-        const lastCart = await this.cartIDBService.getLastCart();
-        this.cart = lastCart ? [lastCart] : [];
-        this.selectedCustomer = lastCart?.customer ?? null;
-        this.cartId = this.cart.find(cart => cart.customer_id === this.selectedCustomer?.id)?.id ?? 0;
-        console.log('Carrito cargado:', this.cart);
-        console.log('CART ID:', this.cartId);
+      const productTypeId = Number(params.get('productTypeId'));
+      console.log('Product Type ID:', productTypeId);
 
+      const allProducts = await this.productIDBService.getAll();
+      this.productExists = allProducts.some(product => product.id === id);
 
+      this.productTypeExists = allProducts.map(
+        (product) => {
+          const productType = product.product_types.some(
+            pt => pt.id === productTypeId
+          );
+          return productType;
+        }
+      ).includes(true);
 
+      // console.log('Producto existe:', this.productExists);
+      console.log('Tipo de producto existe:', this.productTypeExists);
 
+      if (!this.productExists) {
+        // Aquí puedes redirigir, mostrar un mensaje o simplemente retornar
+        console.warn('El producto no existe o la ruta es inválida');
         this.cdr.detectChanges();
+        return;
       }
+
+
+      const extraOptions = allProducts.find(product => product.id === id)?.extra_options ?? [];
+      this.priceMetroLineal = allProducts.find(product => product.id === id)?.price ?? 0;
+      this.nameProduct = allProducts.find(product => product.id === id)?.name ?? '';
+      this.extraOption = extraOptions.sort((a, b) => a.id - b.id);
+
+      const lastCart = await this.cartIDBService.getLastCart();
+      this.cart = lastCart ? [lastCart] : [];
+      this.selectedCustomer = lastCart?.customer ?? null;
+      this.cartId = this.cart.find(cart => cart.customer_id === this.selectedCustomer?.id)?.id ?? 0;
+      console.log('Extra Options:', this.extraOption);
+      console.log('Carrito cargado:', this.cart);
+      console.log('CART ID:', this.cartId);
+
+
+
+
+      this.cdr.detectChanges();
+
     })
 
   }
@@ -239,13 +268,5 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
       })
     }
   }
-
-
-
-  async saveToCart() {
-    // const cartId = await db
-  }
-
-
 }
 
