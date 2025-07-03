@@ -8,7 +8,6 @@ import { calculateCeltexFoamPriceAndSheets, calculateLaborPrice } from '@shared/
 import { CustomerModal } from '@features/customer/components/customer-modal/customer-modal';
 import { Customer } from '@core/models/customer';
 import { CartItem, ProductExtraOption } from '@core/models/cart';
-import { Order } from '@core/models/order';
 import { Cart } from '@core/models/cart';
 import { CartIndexedDBService } from '@features/quotations/services/cart-idb';
 import { CustomerService } from '@features/customer/service/customer';
@@ -26,7 +25,7 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
 
   selectedCustomer: Customer | null = null;
 
-  cart: Cart[] = []
+  cart: Cart | null = null;
   cartId: number = 0;
   cartItem: CartItem[] = [];
   cartExtraOptions: ProductExtraOption[] = [];
@@ -46,15 +45,33 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
   }
 
   // Método que se ejecuta cuando el modal emite un cliente seleccionado
-  onCustomerSelected(customer: Customer): void {
+  async onCustomerSelected(customer: Customer): Promise<void> {
     this.selectedCustomer = customer;
     console.log('Cliente seleccionado:', this.selectedCustomer);
-    console.log('Cliente seleccionado:', this.selectedCustomer.id);
-    this.cart.push({
-      customer_id: this.selectedCustomer.id,
-      customer: this.selectedCustomer,
-    })
-    this.cartIDBService.saveCart(this.cart)
+
+    const customerCart = await this.cartIDBService.getByCustomerId(this.selectedCustomer.id);
+
+    if (customerCart) {
+      // Si ya existe un carrito para este cliente, lo usamos
+      this.cart = customerCart;
+      this.cartIDBService.deleteCart(this.cart.id ?? 0);
+      this.cart = null
+      this.cart = {
+        customer_id: customerCart.customer_id,
+        customer: customerCart.customer,
+        items: customerCart.items,
+      }
+      this.cartIDBService.saveCart([this.cart]);
+    }
+    else {
+      // Si no existe, creamos un nuevo carrito
+      this.cart = {
+        customer_id: this.selectedCustomer.id,
+        customer: this.selectedCustomer,
+      };
+      this.cartIDBService.saveCart([this.cart]);
+      console.log('Nuevo carrito creado:', this.cart);
+    }
   }
 
 
@@ -84,13 +101,20 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
   quantity: number = 1;
   isCalculating: boolean = false;
   nameProduct: string = '';
-  priceMetroLineal: number = 0;
+  priceBase: number = 0;
   priceUnit: number = 0;
   priceQuantity: number = 0;
-  // Selects radio buttons
-  selectedLaminadoId: number | null = null;
-  selectedCeltexFoamId: number | null = null;
-  selectedManoDeObraId: number = 14;
+  priceMeterSquare: number = 0; // Precio por Metro Cuadrado
+  priceQuantityMS: number = 0; // Precio por Metro Cuadrado por Cantidad
+  // Gigantografía selected options
+  termoselladoValue: string | null = null;
+  tuboColganteValue: string | null = null;
+  ojalesValue: number | null = null;
+  enmarcadoValue: string | null = null;
+  // Vinil Selects radio buttons
+  laminadoId: number | null = null;
+  celtexFoamId: number | null = null;
+  manoDeObraId: number = 14;
 
   quantityExtraOption: number = 1;
 
@@ -102,13 +126,21 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
     quantity: this.formBuilder.control<number | null>(1),
   });
 
-  extraOptionForm = this.formBuilder.group({
+  extraOptionVinForm = this.formBuilder.group({
     celtexFoam: this.formBuilder.control<number | null>(null),
     laminado: this.formBuilder.control<number | null>(null),
     manoDeObra: this.formBuilder.control<number | null>(null),
     height: this.formBuilder.control<number | null>(null),
     width: this.formBuilder.control<number | null>(null),
   });
+
+  extraOptionGigaForm = this.formBuilder.group({
+    termosellado: this.formBuilder.control<string | null>(null),
+    tuboColgante: this.formBuilder.control<string | null>(null),
+    ojales: this.formBuilder.control<number | null>(null),
+    enmarcado: this.formBuilder.control<string | null>(null),
+  });
+
 
 
   async ngOnInit() {
@@ -140,28 +172,29 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
         this.cdr.detectChanges();
         return;
       }
-
-
       const extraOptions = allProducts.find(product => product.id === id)?.extra_options ?? [];
-      this.priceMetroLineal = allProducts.find(product => product.id === id)?.price ?? 0;
+      this.priceBase = allProducts.find(product => product.id === id)?.price ?? 0;
       this.nameProduct = allProducts.find(product => product.id === id)?.name ?? '';
       this.extraOption = extraOptions.sort((a, b) => a.id - b.id);
 
       const lastCart = await this.cartIDBService.getLastCart();
-      this.cart = lastCart ? [lastCart] : [];
+      this.cart = lastCart ?? null;
       this.selectedCustomer = lastCart?.customer ?? null;
-      this.cartId = this.cart.find(cart => cart.customer_id === this.selectedCustomer?.id)?.id ?? 0;
+      this.cartId = this.cart?.id ?? 0;
       console.log('Extra Options:', this.extraOption);
       console.log('Carrito cargado:', this.cart);
       console.log('CART ID:', this.cartId);
 
-
-
-
+      if (this.selectedCustomer?.id) {
+        const customerCart = await this.cartIDBService.getByCustomerId(this.selectedCustomer.id);
+        if (customerCart) {
+          // Si ya existe un carrito para este cliente, lo usamos
+          this.cart = customerCart;
+          this.cartId = customerCart.id ?? 0;
+        }
+      }
       this.cdr.detectChanges();
-
     })
-
   }
 
   onSubmit() {
@@ -170,14 +203,16 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
     this.height = this.dimensionsForm.get('height')?.value ?? 0;
     this.area = parseFloat((this.width * this.height).toFixed(4));
     this.quantity = this.dimensionsForm.get('quantity')?.value ?? 1;
-    this.priceUnit = this.height * this.priceMetroLineal
+    this.priceUnit = this.height * this.priceBase
     this.priceQuantity = this.priceUnit * this.quantity;
-    this.extraOptionForm.get('height')?.setValue(this.height);// Metro Lineal
+    this.priceMeterSquare = this.priceBase * this.area;
+    this.priceQuantityMS = this.priceMeterSquare * this.quantity;
+    this.extraOptionVinForm.get('height')?.setValue(this.height);// Metro Lineal
     console.log('Área calculada:', this.area);
     console.log('Ancho:', this.width, 'Alto:', this.height);
     console.log('Form', this.dimensionsForm?.value)
 
-    const cart_id = this.cart.find(cart => cart.customer_id === this.selectedCustomer?.id)?.id ?? 0;
+    const cart_id = this.cart?.id ?? 0;
     console.log('cart', this.cart);
     console.log('Cart ID:', cart_id);
 
@@ -194,57 +229,98 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
   }
 
   calculateExtraOptionPrice() {
-    this.selectedLaminadoId = this.extraOptionForm.get('laminado')?.value ?? null;
-    this.selectedCeltexFoamId = this.extraOptionForm.get('celtexFoam')?.value ?? null;
-    // this.selectedManoDeObraId = this.extraOptionForm.get('manoDeObra')?.value ?? null;
-    const laminadoPrice = this.extraOption.find(option => option.id === this.selectedLaminadoId)?.price ?? 0;
-    const priceCeltexFoam = this.extraOption.find(option => option.id === this.selectedCeltexFoamId)?.price ?? 0;
-    const manoDeObraPrice = this.extraOption.find(option => option.id === this.selectedManoDeObraId)?.price ?? 0;
-    // php
-    const widthCeltexFoam = this.extraOptionForm.get('width')?.value ?? 0;
-    const heightCeltexFoam = this.extraOptionForm.get('height')?.value ?? 0;
+    if (this.productId === 1) {
+      const ids = [{ termoId: 1, tuboId: 2, ojalesId: 3, enmarcadoId: 4 }];
+      const valueTermosellado = this.extraOptionGigaForm.get('termosellado')?.value ?? null;
+      const valueTuboColgante = this.extraOptionGigaForm.get('tuboColgante')?.value ?? null;
+      const valueOjales = this.extraOptionGigaForm.get('ojales')?.value ?? null;
+      const valueEnmarcado = this.extraOptionGigaForm.get('enmarcado')?.value ?? null;
+      console.log('Giga form Values:', this.extraOptionGigaForm.value);
+      if (valueTermosellado) {
+        this.setCartExtraOptionGiga(ids[0].termoId, valueTermosellado);
+      }
+      if (valueTuboColgante) {
+        this.setCartExtraOptionGiga(ids[0].tuboId, valueTuboColgante);
+      }
+      if (valueOjales) {
+        this.setCartExtraOptionGiga(ids[0].ojalesId);
+      }
+      if (valueEnmarcado) {
+        this.setCartExtraOptionGiga(ids[0].enmarcadoId, valueEnmarcado);
+      }
 
-    let cf = calculateCeltexFoamPriceAndSheets(heightCeltexFoam, widthCeltexFoam, priceCeltexFoam)
-    this.quantityExtraOption = cf.sheetsUsed;
-    let labor = parseInt(calculateLaborPrice(heightCeltexFoam, widthCeltexFoam, manoDeObraPrice).toFixed(2));
+      this.cartIDBService.saveCartExtraOptions(this.cartExtraOptions, this.cartId, this.productId);
+    }
 
-    this.extraOptionForm.get('manoDeObra')?.setValue(this.selectedManoDeObraId);
+    if (this.productId >= 2 && this.productId <= 9) {
+      this.laminadoId = this.extraOptionVinForm.get('laminado')?.value ?? null;
+      this.celtexFoamId = this.extraOptionVinForm.get('celtexFoam')?.value ?? null;
+      // this.selectedManoDeObraId = this.extraOptionForm.get('manoDeObra')?.value ?? null;
+      const laminadoPrice = this.extraOption.find(option => option.id === this.laminadoId)?.price ?? 0;
+      const priceCeltexFoam = this.extraOption.find(option => option.id === this.celtexFoamId)?.price ?? 0;
+      const manoDeObraPrice = this.extraOption.find(option => option.id === this.manoDeObraId)?.price ?? 0;
+      // php
+      const widthCeltexFoam = this.extraOptionVinForm.get('width')?.value ?? 0;
+      const heightCeltexFoam = this.extraOptionVinForm.get('height')?.value ?? 0;
 
-    console.log('########### Precios Opciones Extra ###########');
-    console.log('Precio Laminado:', laminadoPrice);
-    console.log('Precio Celtex Foam Calculado:', cf);
-    console.log('Precio Mano de Obra Calculado:', labor);
-    console.log('Extra Options Form', this.extraOptionForm?.value);
+      let cf = calculateCeltexFoamPriceAndSheets(heightCeltexFoam, widthCeltexFoam, priceCeltexFoam)
+      this.quantityExtraOption = cf.sheetsUsed;
+      let labor = parseInt(calculateLaborPrice(heightCeltexFoam, widthCeltexFoam, manoDeObraPrice).toFixed(2));
 
-    console.log('########### Fin Precios Opciones Extra ###########');
-    this.setCartExtraOption(this.selectedLaminadoId ?? 0);
-    this.setCartExtraOption(this.selectedCeltexFoamId ?? 0);
+      this.extraOptionVinForm.get('manoDeObra')?.setValue(this.manoDeObraId);
 
-    console.log('Cart Extra Options:', this.cartExtraOptions);
+      console.log('########### Precios Opciones Extra ###########');
+      console.log('Precio Laminado:', laminadoPrice);
+      console.log('Precio Celtex Foam Calculado:', cf);
+      console.log('Precio Mano de Obra Calculado:', labor);
+      console.log('Extra Options Form', this.extraOptionVinForm?.value);
 
-    this.cartIDBService.saveCartExtraOptions(this.cartExtraOptions, this.cartId, this.productId)
+      console.log('########### Fin Precios Opciones Extra ###########');
+      this.setCartExtraOptionVin(this.laminadoId ?? 0);
+      this.setCartExtraOptionVin(this.celtexFoamId ?? 0);
+
+      console.log('Cart Extra Options:', this.cartExtraOptions);
+
+      this.cartIDBService.saveCartExtraOptions(this.cartExtraOptions, this.cartId, this.productId)
+    }
+
 
   }
 
-  onClean() {
-    this.isCalculating = false;
-    this.width = 0;
-    this.height = 0;
-    this.area = 0;
-    this.quantity = 1;
-    this.priceUnit = 0;
-    this.priceQuantity = 0;
-    this.dimensionsForm.reset({ width: null, height: null, quantity: 1 });
-    this.extraOptionForm.reset({
-      celtexFoam: null,
-      laminado: null,
-      manoDeObra: null,
-    });
-    this.cdr.detectChanges();
+  setCartExtraOptionGiga(id: number, giga_select: string | null = null) {
+    const gigaForm = this.extraOptionGigaForm.value;
+    if (id === 1) { // Termosellado
+      this.cartExtraOptions.push({
+        extra_option_id: id,
+        quantity: this.quantity ?? null,
+        giga_select: giga_select,
+      });
+    }
+    if (id === 2) { // Tubo Colgante
+      this.cartExtraOptions.push({
+        extra_option_id: id,
+        quantity: this.quantity ?? null,
+        giga_select: giga_select,
+      });
+    }
+    if (id === 3) { // Ojales
+      this.cartExtraOptions.push({
+        extra_option_id: id,
+        quantity: (gigaForm.ojales ?? 1 * this.quantity),
+        giga_select: giga_select,
+      });
+    }
+    if (id === 4) { // Enmarcado
+      this.cartExtraOptions.push({
+        extra_option_id: id,
+        quantity: this.quantity ?? null,
+        giga_select: giga_select,
+      });
+    }
   }
 
-  setCartExtraOption(id: number) {
-    const extraform = this.extraOptionForm.value;
+  setCartExtraOptionVin(id: number) {
+    const extraform = this.extraOptionVinForm.value;
     if (id >= 5 && id <= 8) { // Laminados
       this.cartExtraOptions.push({
         extra_option_id: id,
@@ -268,5 +344,23 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
       })
     }
   }
+
+  onClean() {
+    this.isCalculating = false;
+    this.width = 0;
+    this.height = 0;
+    this.area = 0;
+    this.quantity = 1;
+    this.priceUnit = 0;
+    this.priceQuantity = 0;
+    this.dimensionsForm.reset({ width: null, height: null, quantity: 1 });
+    this.extraOptionVinForm.reset({
+      celtexFoam: null,
+      laminado: null,
+      manoDeObra: null,
+    });
+    this.cdr.detectChanges();
+  }
+
 }
 

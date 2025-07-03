@@ -1,3 +1,132 @@
+//  G I G A N T O G R A F I A
+export function getPriceForTypeClient(
+  tipo_cliente: 'final' | 'imprentero', cantidad: number
+): number {
+  let precio = 0;
+
+  if (tipo_cliente === 'final') {
+    if (cantidad > 0 && cantidad <= 6) {
+      precio = 17.00;
+    } else if (cantidad > 6 && cantidad <= 18) {
+      precio = 15.00;
+    } else if (cantidad > 18 && cantidad <= 500) {
+      precio = 13.00;
+    }
+  }
+
+  if (tipo_cliente === 'imprentero') {
+    if (cantidad > 0 && cantidad <= 6) {
+      precio = 13.00;
+    } else if (cantidad > 6 && cantidad <= 18) {
+      precio = 12.00;
+    } else if (cantidad > 18 && cantidad <= 500) {
+      precio = 10.00;
+    }
+  }
+
+  return precio;
+}
+/**
+5,Termosellado,1,2.00,final
+6,Pita y Tubo,1,5.00,final
+7,Ojales,1,1.00,final
+8,Marco,1,2.50,final
+12,Termosellado,1,1.00,imprentero
+13,Pita y Tubo,1,2.50,imprentero
+14,Ojales,1,0.50,imprentero
+15,Marco,1,2.50,imprentero
+ */
+
+
+/**
+ * Calcula el precio de termosellado según los parámetros dados.
+ * @param priceBase Precio base de la opción extra
+ * @param width Ancho en metros
+ * @param height Largo en metros
+ * @param optionDimension 'Ancho' | 'Largo' | 'Ambos'
+ * @param cantidad Cantidad de productos
+ */
+export function calculateTermoselladoPrice(
+  priceBase: number,
+  width: number,
+  height: number,
+  optionDimension: string,
+  // cantidad: number,
+): number {
+
+  let additionalValue = 0;
+  if (optionDimension === 'Ancho') {
+    additionalValue = 2 * width * priceBase;
+  } else if (optionDimension === 'Largo') {
+    additionalValue = 2 * height * priceBase;
+  } else if (optionDimension === 'Ambos') {
+    additionalValue = 2 * (width + height) * priceBase;
+  }
+
+  return additionalValue;
+}
+
+
+/**
+ * Calcula el precio de Pita y Tubo según los parámetros dados.
+ * @param priceBase Precio base de la opción extra
+ * @param width Ancho en metros
+ * @param height Largo en metros
+ * @param optionDimension 'Ancho' | 'Largo' | 'Ambos'
+ * @param cantidad Cantidad de productos
+ * @param tipoCliente Tipo de cliente ('final', 'imprentero', etc)
+ * @param obtenerPrecioOpcion Función para obtener el precio base de la opción (debe ser async si consulta IndexedDB)
+ */
+export function calculatePitaTubePrice(
+  priceBase: number,
+  width: number,
+  height: number,
+  optionDimension: string,
+  // cantidad: number,
+): number {
+
+  let additionalValue = 0;
+  if (optionDimension === 'Ancho') {
+    additionalValue = 2 * width * priceBase;
+  } else if (optionDimension === 'Largo') {
+    additionalValue = 2 * height * priceBase;
+  } else if (optionDimension === 'Ambos') {
+    additionalValue = 2 * (width + height) * priceBase;
+  }
+
+  return additionalValue;
+}
+
+
+/**
+ * Calcula el precio total del marco según los parámetros dados.
+ * @param priceBase Precio base del marco
+ * @param width Ancho en metros
+ * @param height Largo en metros
+ * @param cantidad Cantidad de productos
+ */
+export function calculateFramePrice(
+  priceBase: number,
+  width: number,
+  height: number,
+  isApply: string,
+  // cantidad: number
+): number | void {
+
+  if (isApply === 'Aplicar') {
+    // El marco siempre se aplica a todo el perímetro (ambos)
+    const perimetro = 2 * (width + height);
+    const interno = 0.6 * (perimetro * priceBase);
+    const costoFuera = perimetro * priceBase;
+    const costoMaterial = costoFuera + interno;
+
+    // Mano de obra interna (75% del costo material)
+    const manoObraInterna = costoMaterial * 0.75;
+    return (costoMaterial + manoObraInterna);
+  }
+}
+
+
 /**
  * Calculates the price for Celtex Foam based on vinyl dimensions.
  * @param vinylLengthMeters The length of the vinyl in meters.

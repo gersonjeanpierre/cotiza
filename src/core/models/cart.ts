@@ -24,6 +24,7 @@ export interface ProductExtraOption {
   quantity: number | null;
   linear_meter?: number | null;
   width?: number | null;
+  giga_select?: string | null;
 }
 
 export interface DisplayCartItem {

@@ -10,13 +10,22 @@ export class CartIndexedDBService {
     for (const cart of carts) {
       // Busca si ya existe un cart con ese customer_id
       const existingCart = await this.db.carts.where('customer_id').equals(cart.customer_id).first();
+      // Borra el cart existente
       if (existingCart) {
-        // Borra el cart existente
-        await this.db.carts.delete(existingCart.id!);
+        await this.db.carts.where('id').equals(existingCart.id ?? 0).delete();
       }
       // Agrega el nuevo cart (irá al final con nuevo id autoincremental)
       await this.db.carts.add(cart);
     }
+  }
+
+  async deleteCart(cartId: number): Promise<void> {
+    const cart = await this.db.carts.get(cartId);
+    if (!cart) {
+      throw new Error(`Cart with ID ${cartId} not found`);
+    }
+    // Elimina el cart
+    await this.db.carts.where('id').equals(cartId).delete();
   }
 
   async getLastCart(): Promise<Cart | undefined> {

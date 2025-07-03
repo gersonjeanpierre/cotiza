@@ -4,7 +4,7 @@ import { Cart, CartItem } from '@core/models/cart';
 import { Product } from '@core/models/product';
 import { CartIndexedDBService } from '@features/quotations/services/cart-idb';
 import { ProductIndexedDBService } from '@features/quotations/services/products-idb';
-import { calculateLaborPrice } from '@shared/utils/extraOptionList';
+import { calculateFramePrice, calculateLaborPrice, calculateTermoselladoPrice } from '@shared/utils/extraOptionList';
 
 @Component({
   selector: 'app-cart-modal',
@@ -54,9 +54,10 @@ export class CartModal implements OnInit {
             return {
               ...itemExtOpt,
               name: extra?.name,
-              price: extra?.id == 14 // Si es la opción de mano de obra, calculamos el precio
-                ? calculateLaborPrice(itemExtOpt.linear_meter ?? 0, itemExtOpt.width ?? 0, extra?.price)
-                : extra?.price,
+              price: this.getPriceExtraOption(extra?.id ?? 0, item.linear_meter, item.width, itemExtOpt.linear_meter, itemExtOpt.width, extra?.price ?? 0, itemExtOpt.giga_select),
+              // price: extra?.id == 14 // Si es la opción de mano de obra, calculamos el precio
+              //   ? calculateLaborPrice(itemExtOpt.linear_meter ?? 0, itemExtOpt.width ?? 0, extra?.price)
+              //   : extra?.price,
               description: extra?.description
 
             }
@@ -91,7 +92,7 @@ export class CartModal implements OnInit {
   getTotalCart(): number {
     return this.displayCart.reduce((total, item) => total + (item.subtotalProduct || 0), 0);
   }
-  // cart-modal.ts
+
   async deleteExtraOption(productId: number, extraOptionId: number) {
     if (!this.cart?.id) return;
     await this.cartIDBService.deleteCartExtraOption(this.cart.id, productId, extraOptionId);
@@ -102,6 +103,33 @@ export class CartModal implements OnInit {
     if (!this.cart?.id) return;
     await this.cartIDBService.deleteCartItem(this.cart.id, productId);
     await this.loadCart(); // Recarga el carrito para reflejar los cambios
+  }
+
+  getPriceExtraOption(
+    extra_option_id: number,
+    linear_meter: number | null = null, // Product linear meter
+    width: number | null = null, // Product width
+    linear_meter_eo: number | null = null, // Extra option linear meter
+    width_eo: number | null = null, // Extra option width
+    price: number,
+    giga_select: string | null = null
+  ) {
+    let priceExtraOption: number | void = price
+
+    if (extra_option_id == 14) {
+      priceExtraOption = calculateLaborPrice(linear_meter_eo ?? 0, width_eo ?? 0, price ?? 0);
+    }
+    if (extra_option_id == 1) {
+      priceExtraOption = calculateTermoselladoPrice(price ?? 0, width ?? 0, linear_meter ?? 0, giga_select ?? '')
+    }
+    if (extra_option_id == 2) {
+      priceExtraOption = calculateTermoselladoPrice(price ?? 0, width ?? 0, linear_meter ?? 0, giga_select ?? '');
+    }
+    if (extra_option_id == 4) {
+      priceExtraOption = calculateFramePrice(price ?? 0, width ?? 0, linear_meter ?? 0, giga_select ?? '');
+    }
+
+    return priceExtraOption;
   }
 
 }

@@ -1,303 +1,478 @@
 <dialog #customerDialog id="customer_modal" class="modal backdrop-blur-sm">
   <div class="modal-box w-11/12 max-w-5xl">
     <h3 class="font-bold text-lg mb-4">
-      @if (currentView === 'list') {
-      <span>Gestión y Selección de Clientes</span>
+      @if (currentView === "list") {
+        <span>Gestión y Selección de Clientes</span>
       } @else if (isEditing) {
-      <span>Editar Cliente</span>
+        <span>Editar Cliente</span>
       } @else {
-      <span>Crear Nuevo Cliente</span>
+        <span>Crear Nuevo Cliente</span>
       }
     </h3>
 
     @switch (currentView) {
-    @case ('list') {
+      @case ("list") {
+        <div>
+          <div
+            class="flex flex-col md:flex-row justify-between items-center mb-4 gap-4"
+          >
+            <label
+              [formGroup]="searchForm"
+              class="input input-bordered flex items-center gap-2 w-full md:w-1/2"
+            >
+              <input
+                type="text"
+                formControlName="search"
+                class="grow"
+                placeholder="Buscar por nombre, documento, email..."
+              />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 16 16"
+                fill="currentColor"
+                class="w-4 h-4 opacity-70"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M9.965 11.02a.75.75 0 0 1-.585.995 5.5 5.5 0 1 1 1.48-1.48l1.795 1.794a.75.75 0 1 1-1.06 1.06l-1.794-1.795ZM11 6.5a4.5 4.5 0 1 0-9 0 4.5 4.5 0 0 0 9 0Z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+            </label>
+            <button
+              class="btn btn-primary w-full md:w-auto"
+              (click)="showCreateForm()"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 4v16m8-8H4"
+                />
+              </svg>
+              Nuevo Cliente
+            </button>
+          </div>
 
-    <div>
-      <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
-        <label [formGroup]="searchForm" class="input input-bordered flex items-center gap-2 w-full md:w-1/2">
-          <input type="text" formControlName="search" class="grow"
-            placeholder="Buscar por nombre, documento, email..." />
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4 opacity-70">
-            <path fill-rule="evenodd"
-              d="M9.965 11.02a.75.75 0 0 1-.585.995 5.5 5.5 0 1 1 1.48-1.48l1.795 1.794a.75.75 0 1 1-1.06 1.06l-1.794-1.795ZM11 6.5a4.5 4.5 0 1 0-9 0 4.5 4.5 0 0 0 9 0Z"
-              clip-rule="evenodd" />
-          </svg>
-        </label>
-        <button class="btn btn-primary w-full md:w-auto" (click)="showCreateForm()">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-          </svg>
-          Nuevo Cliente
-        </button>
-      </div>
+          <div class="overflow-x-auto">
+            <table class="table table-zebra w-full">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Nombre / Razón Social</th>
+                  <th>Tipo</th>
+                  <th>Documento</th>
+                  <th>Email</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (customer of customers | async; track customer.id) {
+                  <tr>
+                    <td>{{ customer.id }}</td>
+                    <td>
+                      @if (customer.entity_type === "N") {
+                        <span
+                          >{{ customer.name }} {{ customer.last_name }}</span
+                        >
+                      }
+                      @if (customer.entity_type === "J") {
+                        <span>{{ customer.business_name }}</span>
+                      }
+                    </td>
+                    <td>
+                      {{
+                        customer.entity_type === "N" ? "Natural" : "Jurídica"
+                      }}
+                    </td>
+                    <td>
+                      @if (customer.dni) {
+                        <span>{{ customer.dni }} (DNI)</span>
+                      }
+                      @if (customer.ruc) {
+                        <span>{{ customer.ruc }} (RUC)</span>
+                      }
+                      @if (customer.doc_foreign) {
+                        <span>{{ customer.doc_foreign }} (Ext.)</span>
+                      }
+                    </td>
+                    <td>{{ customer.email }}</td>
+                    <td class="flex gap-2">
+                      <button
+                        class="btn btn-sm btn-info"
+                        (click)="selectCustomer(customer)"
+                      >
+                        Seleccionar
+                      </button>
+                      <button
+                        class="btn btn-sm btn-warning"
+                        (click)="showEditForm(customer)"
+                      >
+                        Editar
+                      </button>
+                      <!-- <button class="btn btn-sm btn-error" (click)="deleteCustomer(customer.id)">Eliminar</button> -->
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="6" class="text-center">
+                      No se encontraron clientes.
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
 
-      <div class="overflow-x-auto">
-        <table class="table table-zebra w-full">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Nombre / Razón Social</th>
-              <th>Tipo</th>
-              <th>Documento</th>
-              <th>Email</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (customer of (customers | async); track customer.id) {
-            <tr>
-              <td>{{ customer.id }}</td>
-              <td>
-                @if (customer.entity_type === 'N') {
-                <span>{{ customer.name }} {{ customer.last_name }}</span>
-                }
-                @if (customer.entity_type === 'J') {
-                <span>{{ customer.business_name }}</span>
-                }
-              </td>
-              <td>{{ customer.entity_type === 'N' ? 'Natural' : 'Jurídica' }}</td>
-              <td>
-                @if (customer.dni) {
-                <span>{{ customer.dni }} (DNI)</span>
-                }
-                @if (customer.ruc) {
-                <span>{{ customer.ruc }} (RUC)</span>
-                }
-                @if (customer.doc_foreign) {
-                <span>{{ customer.doc_foreign }} (Ext.)</span>
-                }
-              </td>
-              <td>{{ customer.email }}</td>
-              <td class="flex gap-2">
-                <button class="btn btn-sm btn-info" (click)="selectCustomer(customer)">Seleccionar</button>
-                <button class="btn btn-sm btn-warning" (click)="showEditForm(customer)">Editar</button>
-                <!-- <button class="btn btn-sm btn-error" (click)="deleteCustomer(customer.id)">Eliminar</button> -->
-              </td>
-            </tr>
-            }@empty {
-            <tr>
-              <td colspan="6" class="text-center">No se encontraron clientes.</td>
-            </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-
-      <div class="flex justify-center mt-6">
-        <div class="join">
-          <button class="join-item btn" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">«</button>
-          @for (page of getPages(); track page) {
-          <button class="join-item btn" [class.btn-active]="page === currentPage" (click)="goToPage(page)">{{ page
-            }}</button>
-          }
-          <button class="join-item btn" [disabled]="currentPage === totalPages"
-            (click)="goToPage(currentPage + 1)">»</button>
-        </div>
-      </div>
-      <div class="text-center text-sm text-gray-500 mt-2">
-        Página {{ currentPage }} de {{ totalPages }} ({{ totalItems }} clientes)
-      </div>
-    </div>
-    }
-    @case ('form') {
-    <div>
-      <form [formGroup]="customerForm" (ngSubmit)="saveCustomer()" class="space-y-4">
-        <div class="grid grid-rows-4 grid-cols-2  gap-5">
-          <div class="flex flex-col  form-control col-start-1 col-end-3 row-start-1 row-end-2">
-            <div class="flex justify-center">
-
-              <div class="join">
-                @for (tc of typeCLients; track $index) {
-                <input class="join-item btn" type="radio" formControlName="type_client_id" [value]="tc.id"
-                  [attr.aria-label]="tc.name" />
-                }
-              </div>
+          <div class="flex justify-center mt-6">
+            <div class="join">
+              <button
+                class="join-item btn"
+                [disabled]="currentPage === 1"
+                (click)="goToPage(currentPage - 1)"
+              >
+                «
+              </button>
+              @for (page of getPages(); track page) {
+                <button
+                  class="join-item btn"
+                  [class.btn-active]="page === currentPage"
+                  (click)="goToPage(page)"
+                >
+                  {{ page }}
+                </button>
+              }
+              <button
+                class="join-item btn"
+                [disabled]="currentPage === totalPages"
+                (click)="goToPage(currentPage + 1)"
+              >
+                »
+              </button>
             </div>
           </div>
-          <div class="form-control row-start-2 row-end-3  ">
-            <label class="select">
-              <span class="label">Tipo de Persona</span>
-              <select formControlName="entity_type" class="select select-bordered w-full">
-                <option value="N">Natural</option>
-                <option value="J">Jurídica</option>
-              </select>
-            </label>
+          <div class="text-center text-sm text-gray-500 mt-2">
+            Página {{ currentPage }} de {{ totalPages }} ({{
+              totalItems
+            }}
+            clientes)
           </div>
+        </div>
+      }
+      @case ("form") {
+        <div>
+          <form
+            [formGroup]="customerForm"
+            (ngSubmit)="saveCustomer()"
+            class="space-y-4"
+          >
+            <div class="grid grid-rows-4 grid-cols-2 gap-5">
+              <div
+                class="flex flex-col form-control col-start-1 col-end-3 row-start-1 row-end-2"
+              >
+                <div class="flex justify-center">
+                  <div class="join">
+                    @for (tc of typeCLients; track $index) {
+                      <input
+                        class="join-item btn"
+                        type="radio"
+                        formControlName="type_client_id"
+                        [value]="tc.id"
+                        [attr.aria-label]="tc.name"
+                      />
+                    }
+                  </div>
+                </div>
+              </div>
+              <div class="form-control row-start-2 row-end-3">
+                <label class="select">
+                  <span class="label">Tipo de Persona</span>
+                  <select
+                    formControlName="entity_type"
+                    class="select select-bordered w-full"
+                  >
+                    <option value="N">Natural</option>
+                    <option value="J">Jurídica</option>
+                  </select>
+                </label>
+              </div>
 
-          @if (customerForm.get('entity_type')?.value === 'N') {
+              @if (customerForm.get("entity_type")?.value === "N") {
+                <div class="form-control">
+                  <label class="floating-label">
+                    <input
+                      type="text"
+                      formControlName="name"
+                      placeholder="Nombre(s)"
+                      class="input input-lg placeholder-gray-400"
+                    />
+                    <span>Nombre(s):</span>
+                    @if (
+                      customerForm.get("name")?.invalid &&
+                      customerForm.get("name")?.touched
+                    ) {
+                      <label class="label text-error">
+                        <span class="label-text-alt"
+                          >Nombre(s) es obligatorio.</span
+                        >
+                      </label>
+                    }
+                  </label>
+                </div>
 
+                <div class="form-control">
+                  <label class="floating-label">
+                    <input
+                      type="text"
+                      formControlName="last_name"
+                      class="input input-lg placeholder-gray-400"
+                      placeholder="Apellido(s)"
+                    />
+                    <span class="label-text">Apellido(s)</span>
+                    @if (
+                      customerForm.get("last_name")?.invalid &&
+                      customerForm.get("last_name")?.touched
+                    ) {
+                      <label class="label text-error">
+                        <span class="label-text-alt"
+                          >Apellido es obligatorio.</span
+                        >
+                      </label>
+                    }
+                  </label>
+                </div>
 
-          <div class="form-control">
-            <label class="floating-label">
-              <input type="text" formControlName="name" placeholder="Nombre(s)"
-                class="input input-lg placeholder-gray-400" />
-              <span>Nombre(s):</span>
-              @if (customerForm.get('name')?.invalid && customerForm.get('name')?.touched) {
-              <label class="label text-error">
-                <span class="label-text-alt">Nombre(s) es obligatorio.</span>
-              </label>
-              }
-            </label>
-          </div>
-
-          <div class="form-control">
-            <label class="floating-label">
-              <input type="text" formControlName="last_name" class="input input-lg placeholder-gray-400"
-                placeholder="Apellido(s)" />
-              <span class="label-text">Apellido(s)</span>
-              @if (customerForm.get('last_name')?.invalid && customerForm.get('last_name')?.touched) {
-              <label class="label text-error">
-                <span class="label-text-alt">Apellido es obligatorio.</span>
-              </label>
-              }
-            </label>
-          </div>
-
-          <div class="form-control">
-            <label class="floating-label">
-              <input type="text" formControlName="dni" class="input input-lg" placeholder="DNI"
-                class="input input-lg placeholder-gray-400" />
-              <span class="label-text">DNI</span>
-            </label>
-          </div>
-          <div class="form-control ">
-            <label class="floating-label">
-              <span class="label-text">RUC*</span>
-              <input type="text" formControlName="ruc" class="input input-bordered"
-                class="input input-lg placeholder-gray-400" placeholder="RUC" />
-              <!-- @if (customerForm.get('ruc')?.invalid && customerForm.get('ruc')?.touched) {
+                <div class="form-control">
+                  <label class="floating-label">
+                    <input
+                      type="text"
+                      formControlName="dni"
+                      class="input input-lg"
+                      placeholder="DNI"
+                      class="input input-lg placeholder-gray-400"
+                    />
+                    <span class="label-text">DNI</span>
+                  </label>
+                </div>
+                <div class="form-control">
+                  <label class="floating-label">
+                    <span class="label-text">RUC*</span>
+                    <input
+                      type="text"
+                      formControlName="ruc"
+                      class="input input-bordered"
+                      class="input input-lg placeholder-gray-400"
+                      placeholder="RUC"
+                    />
+                    <!-- @if (customerForm.get('ruc')?.invalid && customerForm.get('ruc')?.touched) {
               <label class="label text-error">
                 <span class="label-text-alt">RUC es obligatorio.</span>
               </label>
               } -->
-            </label>
-          </div>
-          <div class="form-control">
-            <label class="floating-label">
-              <input type="text" formControlName="doc_foreign" class="input input-lg" placeholder="Doc. Extranjero"
-                class="input input-lg placeholder-gray-400" />
-              <span class="label-text">Doc. Extranjero</span>
-            </label>
-          </div>
+                  </label>
+                </div>
+                <div class="form-control">
+                  <label class="floating-label">
+                    <input
+                      type="text"
+                      formControlName="doc_foreign"
+                      class="input input-lg"
+                      placeholder="Doc. Extranjero"
+                      class="input input-lg placeholder-gray-400"
+                    />
+                    <span class="label-text">Doc. Extranjero</span>
+                  </label>
+                </div>
 
-
-          <div class="form-control ">
-            <label class="floating-label">
-              <input type="text" formControlName="business_name" class="input input-lg" placeholder="Razón Social"
-                class="input input-lg placeholder-gray-400" />
-              <span class="label-text">Razón Social (Opcional)</span>
-            </label>
-          </div>
-
-          }
-
-
-
-          @if (customerForm.get('entity_type')?.value === 'J') {
-
-          <div class="form-control ">
-            <label class="floating-label">
-              <span class="label-text">RUC*</span>
-              <input type="text" formControlName="ruc" class="input input-bordered"
-                class="input input-lg placeholder-gray-400" placeholder="RUC" />
-              @if (customerForm.get('ruc')?.invalid && customerForm.get('ruc')?.touched) {
-              <label class="label text-error">
-                <span class="label-text-alt">RUC es obligatorio.</span>
-              </label>
+                <div class="form-control">
+                  <label class="floating-label">
+                    <input
+                      type="text"
+                      formControlName="business_name"
+                      class="input input-lg"
+                      placeholder="Razón Social"
+                      class="input input-lg placeholder-gray-400"
+                    />
+                    <span class="label-text">Razón Social (Opcional)</span>
+                  </label>
+                </div>
               }
-            </label>
-          </div>
-          <div class="form-control ">
-            <label class="floating-label">
-              <span class="label-text">Razón Social*</span>
-              <input type="text" formControlName="business_name" class="input input-bordered"
-                class="input input-lg placeholder-gray-400" placeholder="Razón Social" />
-              @if (customerForm.get('business_name')?.invalid && customerForm.get('business_name')?.touched) {
-              <label class="label text-error">
-                <span class="label-text-alt">Razón social es obligatoria.</span>
-              </label>
+
+              @if (customerForm.get("entity_type")?.value === "J") {
+                <div class="form-control">
+                  <label class="floating-label">
+                    <span class="label-text">RUC*</span>
+                    <input
+                      type="text"
+                      formControlName="ruc"
+                      class="input input-bordered"
+                      class="input input-lg placeholder-gray-400"
+                      placeholder="RUC"
+                    />
+                    @if (
+                      customerForm.get("ruc")?.invalid &&
+                      customerForm.get("ruc")?.touched
+                    ) {
+                      <label class="label text-error">
+                        <span class="label-text-alt">RUC es obligatorio.</span>
+                      </label>
+                    }
+                  </label>
+                </div>
+                <div class="form-control">
+                  <label class="floating-label">
+                    <span class="label-text">Razón Social*</span>
+                    <input
+                      type="text"
+                      formControlName="business_name"
+                      class="input input-bordered"
+                      class="input input-lg placeholder-gray-400"
+                      placeholder="Razón Social"
+                    />
+                    @if (
+                      customerForm.get("business_name")?.invalid &&
+                      customerForm.get("business_name")?.touched
+                    ) {
+                      <label class="label text-error">
+                        <span class="label-text-alt"
+                          >Razón social es obligatoria.</span
+                        >
+                      </label>
+                    }
+                  </label>
+                </div>
+
+                <div class="form-control">
+                  <label class="floating-label">
+                    <input
+                      type="text"
+                      formControlName="name"
+                      class="input input-bordered"
+                      class="input input-lg placeholder-gray-400"
+                      placeholder="Nombres del Representante"
+                    />
+                    <span class="label-text">Nombres del Representante</span>
+                  </label>
+                </div>
+                <div class="form-control">
+                  <label class="floating-label">
+                    <input
+                      type="text"
+                      formControlName="last_name"
+                      class="input input-bordered"
+                      class="input input-lg placeholder-gray-400"
+                      placeholder="Apellidos del Representante"
+                    />
+                    <span class="label-text">Apellidos del Representante</span>
+                  </label>
+                </div>
+                <div class="form-control">
+                  <label class="floating-label">
+                    <input
+                      type="text"
+                      formControlName="dni"
+                      class="input input-bordered"
+                      class="input input-lg placeholder-gray-400"
+                      placeholder="DNI del Representante"
+                    />
+                    <span class="label-text">DNI Representante</span>
+                  </label>
+                </div>
+                <div class="form-control">
+                  <label class="floating-label">
+                    <input
+                      type="text"
+                      formControlName="doc_foreign"
+                      class="input input-bordered"
+                      class="input input-lg placeholder-gray-400"
+                      placeholder="Doc. Extranjeria"
+                    />
+                    <span class="label-text">Doc. Extranjeria</span>
+                  </label>
+                </div>
               }
-            </label>
-          </div>
 
-          <div class="form-control ">
-            <label class="floating-label">
-              <input type="text" formControlName="name" class="input input-bordered"
-                class="input input-lg placeholder-gray-400" placeholder="Nombres del Representante" />
-              <span class="label-text">Nombres del Representante</span>
-            </label>
-          </div>
-          <div class="form-control ">
-            <label class="floating-label">
-              <input type="text" formControlName="last_name" class="input input-bordered"
-                class="input input-lg placeholder-gray-400" placeholder="Apellidos del Representante" />
-              <span class="label-text">Apellidos del Representante</span>
-            </label>
-          </div>
-          <div class="form-control ">
-            <label class="floating-label">
-              <input type="text" formControlName="dni" class="input input-bordered"
-                class="input input-lg placeholder-gray-400" placeholder="DNI del Representante" />
-              <span class="label-text">DNI Representante</span>
-            </label>
-          </div>
-          <div class="form-control ">
-            <label class="floating-label">
-              <input type="text" formControlName="doc_foreign" class="input input-bordered"
-                class="input input-lg placeholder-gray-400" placeholder="Doc. Extranjeria" />
-              <span class="label-text">Doc. Extranjeria</span>
-            </label>
-          </div>
+              <div class="form-control">
+                <label class="floating-label">
+                  <input
+                    type="tel"
+                    formControlName="phone_number"
+                    class="input input-lg"
+                    class="input input-lg placeholder-gray-400"
+                    placeholder="Teléfono"
+                  />
+                  <span class="label-text">Teléfono*</span>
+                  @if (
+                    customerForm.get("phone_number")?.invalid &&
+                    customerForm.get("phone_number")?.touched
+                  ) {
+                    <label class="label text-error">
+                      <span class="label-text-alt"
+                        >Teléfono es obligatorio y solo debe contener
+                        números.</span
+                      >
+                    </label>
+                  }
+                </label>
+              </div>
+              <div class="form-control">
+                <label class="floating-label">
+                  <input
+                    type="email"
+                    formControlName="email"
+                    class="input input-lg"
+                    class="input input-lg placeholder-gray-400"
+                    placeholder="Email"
+                  />
+                  <span class="label-text">Email*</span>
+                  @if (
+                    customerForm.get("email")?.invalid &&
+                    customerForm.get("email")?.touched
+                  ) {
+                    <label class="label text-error">
+                      <span class="label-text-alt">Email inválido.</span>
+                    </label>
+                  }
+                </label>
+              </div>
+            </div>
 
-
-          }
-
-          <div class="form-control ">
-            <label class="floating-label">
-              <input type="tel" formControlName="phone_number" class="input input-lg"
-                class="input input-lg placeholder-gray-400" placeholder="Teléfono" />
-              <span class="label-text">Teléfono*</span>
-              @if (customerForm.get('phone_number')?.invalid && customerForm.get('phone_number')?.touched) {
-              <label class="label text-error">
-                <span class="label-text-alt">Teléfono es obligatorio y solo debe contener números.</span>
-              </label>
-              }
-            </label>
-          </div>
-          <div class="form-control ">
-            <label class="floating-label">
-              <input type="email" formControlName="email" class="input input-lg"
-                class="input input-lg placeholder-gray-400" placeholder="Email" />
-              <span class="label-text">Email*</span>
-              @if (customerForm.get('email')?.invalid && customerForm.get('email')?.touched) {
-              <label class="label text-error">
-                <span class="label-text-alt">Email inválido.</span>
-              </label>
-              }
-            </label>
-          </div>
-
+            <div class="flex justify-end gap-2 mt-6">
+              <button
+                type="button"
+                class="btn btn-ghost"
+                (click)="backToList()"
+              >
+                Cancelar
+              </button>
+              <button type="submit" class="btn btn-primary">
+                @if (isEditing) {
+                  <span>Guardar Cambios</span>
+                } @else {
+                  <span>Crear</span>
+                }
+              </button>
+            </div>
+          </form>
         </div>
-
-        <div class="flex justify-end gap-2 mt-6">
-          <button type="button" class="btn btn-ghost" (click)="backToList()">Cancelar</button>
-          <button type="submit" class="btn btn-primary">
-            @if (isEditing) {
-            <span>Guardar Cambios</span>
-            } @else {
-            <span>Crear</span>
-            }
-          </button>
-        </div>
-      </form>
-    </div>
-    }
+      }
     }
 
     <div class="modal-action">
       <form method="dialog">
-        <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" (click)="closeModal()">✕</button>
+        <button
+          class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+          (click)="closeModal()"
+        >
+          ✕
+        </button>
       </form>
     </div>
   </div>
