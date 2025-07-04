@@ -1,10 +1,14 @@
 <dialog #cartDialog id="cart_modal" class="modal backdrop-blur-sm">
-  <div class=" modal-box max-w-5xl">
+  <div class="modal-box max-w-5xl">
     <form method="dialog">
-      <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+      <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
+        ✕
+      </button>
     </form>
     <h3 class="text-lg font-bold mb-4">Carrito de Compras</h3>
-    <div class="overflow-x-auto rounded-box border border-base-content/5 bg-base-100">
+    <div
+      class="overflow-x-auto rounded-box border border-base-content/5 bg-base-100"
+    >
       <table class="table">
         <!-- head -->
         <thead>
@@ -19,71 +23,125 @@
         </thead>
         <tbody>
           @for (p of displayCart; track $index) {
-          <tr>
-            <th>{{$index + 1}}</th>
-            <td class="font-bold">{{p.sku}}</td>
-            <td class="font-bold">{{p.name}}
-              @if (p.linear_meter) {
-              <span class="text-gray-500 font-medium">| Metro Lineal: {{p.linear_meter}} m</span>
-              }
-            </td>
-            <td class="text-center">{{p.quantity}}</td>
-            <td class="text-center">{{p.price | number:'1.2-2'}}</td>
-            <td class="text-right">{{p.quantity * p.price | number:'1.2-2'}}</td>
-            <td>
-              <button class="btn btn-xs btn-error" (click)="deleteCartItem(p.product_id)">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-                  <path fill="currentColor"
-                    d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6zm2.46-7.12l1.41-1.41L12 12.59l2.12-2.12l1.41 1.41L13.41 14l2.12 2.12l-1.41 1.41L12 15.41l-2.12 2.12l-1.41-1.41L10.59 14zM15.5 4l-1-1h-5l-1 1H5v2h14V4z" />
-                </svg>
-              </button>
-            </td>
-          </tr>
-          <tr>
-            @if (p.product_extra_options && p.product_extra_options.length > 0) {
-            <td></td>
-            <td></td>
-            <td colspan="4" class="badge badge-neutral badge-outline ml-3 font-bold py-0">Extras</td>
-            }
-          </tr>
-          @for (extra of p.product_extra_options; track $index) {
-          <tr>
-            <td></td>
-            <td></td>
-            <td>{{extra.name}}
-              @if (extra.linear_meter && extra.extra_option_id >= 5 && extra.extra_option_id <= 8) { <span>| Metro
-                Lineal: {{extra.linear_meter}} m</span>
+            <tr>
+              <th>{{ $index + 1 }}</th>
+              <td class="font-bold">{{ p.sku }}</td>
+              <td class="font-bold">
+                {{ p.name }}
+                @if (p.product_id === 1) {
+                  <span class="text-gray-500 font-medium"
+                    >| Metro Cuadrado: {{ p.linear_meter * p.width }} m<sup
+                      >2</sup
+                    >
+                  </span>
                 }
-                @if (extra.linear_meter && extra.extra_option_id >= 10 && extra.extra_option_id <= 13) { <span>| Largo:
-                  {{extra.linear_meter}} m | Ancho: {{extra.width}}</span>
-
+                @if (p.product_id >= 2 && p.product_id <= 9) {
+                  <span class="text-gray-500 font-medium"
+                    >| Metro Lineal: {{ p.linear_meter }} m</span
+                  >
+                }
+              </td>
+              <td class="text-center">{{ p.quantity }}</td>
+              <td class="text-center">{{ p.price | number: "1.2-2" }}</td>
+              <td class="text-right">
+                {{ p.quantity * p.price | number: "1.2-2" }}
+              </td>
+              <td>
+                <button
+                  class="btn btn-xs btn-error"
+                  (click)="deleteCartItem(p.product_id)"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      fill="currentColor"
+                      d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6zm2.46-7.12l1.41-1.41L12 12.59l2.12-2.12l1.41 1.41L13.41 14l2.12 2.12l-1.41 1.41L12 15.41l-2.12 2.12l-1.41-1.41L10.59 14zM15.5 4l-1-1h-5l-1 1H5v2h14V4z"
+                    />
+                  </svg>
+                </button>
+              </td>
+            </tr>
+            <tr>
+              @if (
+                p.product_extra_options && p.product_extra_options.length > 0
+              ) {
+                <td></td>
+                <td></td>
+                <td
+                  colspan="4"
+                  class="badge badge-neutral badge-outline ml-3 font-bold py-0"
+                >
+                  Extras
+                </td>
+              }
+            </tr>
+            @for (extra of p.product_extra_options; track $index) {
+              <tr>
+                <td></td>
+                <td></td>
+                <td>
+                  <!-- Laminados -->
+                  {{ extra.name }}
+                  @if (
+                    extra.linear_meter &&
+                    extra.extra_option_id >= 5 &&
+                    extra.extra_option_id <= 8
+                  ) {
+                    <span>| Metro Lineal: {{ extra.linear_meter }} m</span>
                   }
-            </td>
-            <td class="text-center">{{extra.quantity}}</td>
-            <td class="text-center">{{extra.price | number:'1.2-2' }}</td>
-            <td class="text-right">{{extra.quantity * extra.price | number:'1.2-2' }}</td>
-          </tr>
+                  <!-- Foam Celtex -->
+                  @if (
+                    extra.linear_meter &&
+                    extra.extra_option_id >= 10 &&
+                    extra.extra_option_id <= 13
+                  ) {
+                    <span
+                      >| Largo: {{ extra.linear_meter }} m | Ancho:
+                      {{ extra.width }}</span
+                    >
+                  }
+                </td>
+                <td class="text-center">{{ extra.quantity }}</td>
+                <td class="text-center">{{ extra.price | number: "1.2-2" }}</td>
+                <td class="text-right">
+                  {{ extra.quantity * extra.price | number: "1.2-2" }}
+                </td>
+              </tr>
+            }
+            <tr>
+              <td colspan="5" class="text-right font-bold">Subtotal (S/.):</td>
+              <td class="font-bold text-right">
+                {{ p.subtotalProduct | number: "1.2-2" }}
+              </td>
+            </tr>
           }
           <tr>
-            <td colspan="5" class="text-right font-bold">
-              Subtotal (S/.):
+            <td colspan="4"></td>
+            <td class="text-right font-bold border-2">Gravado (S/.):</td>
+            <td class="font-bold text-right border-2">
+              {{ totalAmount | number: "1.2-2" }}
             </td>
-            <td class="font-bold text-right">{{p.subtotalProduct | number:'1.2-2'}}</td>
           </tr>
-
-          }
           <tr>
-            <td colspan="5" class="text-right font-bold">
-              Total Carrito (S/.):
+            <td colspan="4"></td>
+            <td class="text-right font-bold border-2">IGV 18% (S/.):</td>
+            <td class="font-bold text-right border-2">
+              {{ totalIgv | number: "1.2-2" }}
             </td>
-            <td class="font-bold text-right">{{getTotalCart() | number:'1.2-2'}}</td>
           </tr>
-
-
+          <tr>
+            <td colspan="4">SON: {{ totalToText }}</td>
+            <td class="text-right font-bold border-2">Total Carrito (S/.):</td>
+            <td class="font-bold text-right border-2">
+              {{ finalAmount | number: "1.2-2" }}
+            </td>
+          </tr>
         </tbody>
       </table>
     </div>
-
-
   </div>
 </dialog>

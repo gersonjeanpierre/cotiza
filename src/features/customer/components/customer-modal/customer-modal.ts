@@ -1,3 +1,4 @@
+
 import { Component, ViewChild, Output, ElementRef, EventEmitter, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CreateCustomerPayload, Customer } from '@core/models/customer';
@@ -214,6 +215,11 @@ export class CustomerModal implements OnInit {
       this.customerService.updateCustomer(this.editingCustomerId, payload).subscribe({
         next: () => {
           this.customersChanged.emit();
+
+          this.customerService.getCustomerById(this.editingCustomerId as number).subscribe((customer) => {
+            this.customerSelected.emit(customer);
+          });
+
           this.currentView = 'list';
           this.loadAllCustomers(); // Vuelve a cargar la lista para ver los cambios
         },

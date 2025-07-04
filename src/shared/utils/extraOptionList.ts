@@ -1,7 +1,7 @@
 //  G I G A N T O G R A F I A
-export function getPriceForTypeClient(
-  tipo_cliente: 'final' | 'imprentero', cantidad: number
-): number {
+export const getPriceGigaForTypeClient = (
+  tipo_cliente: string, cantidad: number
+): number => {
   let precio = 0;
 
   if (tipo_cliente === 'final') {
@@ -46,13 +46,13 @@ export function getPriceForTypeClient(
  * @param optionDimension 'Ancho' | 'Largo' | 'Ambos'
  * @param cantidad Cantidad de productos
  */
-export function calculateTermoselladoPrice(
+export const calculateTermoselladoPrice = (
   priceBase: number,
   width: number,
   height: number,
   optionDimension: string,
   // cantidad: number,
-): number {
+): number => {
 
   let additionalValue = 0;
   if (optionDimension === 'Ancho') {
@@ -77,13 +77,13 @@ export function calculateTermoselladoPrice(
  * @param tipoCliente Tipo de cliente ('final', 'imprentero', etc)
  * @param obtenerPrecioOpcion Función para obtener el precio base de la opción (debe ser async si consulta IndexedDB)
  */
-export function calculatePitaTubePrice(
+export const calculatePitaTubePrice = (
   priceBase: number,
   width: number,
   height: number,
   optionDimension: string,
   // cantidad: number,
-): number {
+): number => {
 
   let additionalValue = 0;
   if (optionDimension === 'Ancho') {
@@ -105,13 +105,13 @@ export function calculatePitaTubePrice(
  * @param height Largo en metros
  * @param cantidad Cantidad de productos
  */
-export function calculateFramePrice(
+export const calculateFramePrice = (
   priceBase: number,
   width: number,
   height: number,
   isApply: string,
   // cantidad: number
-): number | void {
+): number | void => {
 
   if (isApply === 'Aplicar') {
     // El marco siempre se aplica a todo el perímetro (ambos)
@@ -126,6 +126,31 @@ export function calculateFramePrice(
   }
 }
 
+// V I N I L O S
+
+export const getPriceVinylForTypeClient = (
+  productId: number,
+  typeClient: string,
+  priceBase: number
+): number => {
+  let price = 0;
+  if (productId >= 2 && productId <= 5) {
+    if (typeClient === 'final') {
+      price = priceBase;
+    } else if (typeClient === 'imprentero') {
+      price = priceBase - 5;
+    }
+  }
+  if (productId >= 6 && productId <= 9) {
+    if (typeClient === 'final') {
+      price = priceBase;
+    } else if (typeClient === 'imprentero') {
+      price = priceBase - 10;
+    }
+  }
+  return price;
+}
+
 
 /**
  * Calculates the price for Celtex Foam based on vinyl dimensions.
@@ -134,11 +159,11 @@ export function calculateFramePrice(
  * @param baseSheetPrice The base price of a single Celtex Foam sheet.
  * @returns The calculated final cost in soles, or 0 if dimensions are not compatible.
  */
-export function calculateCeltexFoamPriceAndSheets(
+export const calculateCeltexFoamPriceAndSheets = (
   vinylLengthMeters: number,
   vinylWidthMeters: number,
   baseSheetPrice: number
-): { cost: number; sheetsUsed: number } {
+): { cost: number; sheetsUsed: number } => {
   const sheetLength = 2.4; // meters
   const sheetWidth = 1.2; // meters
   const totalSheetArea = sheetLength * sheetWidth; // m²
@@ -225,11 +250,11 @@ export function calculateCeltexFoamPriceAndSheets(
  * @param basePrice The base price for labor, which varies based on the area of the sheet.
  * @returns The calculated total labor cost.
  */
-export function calculateLaborPrice(
+export const calculateLaborPrice = (
   sheetHeight: number,
   sheetWidth: number,
   basePrice: number,
-): number {
+): number => {
   const sheetArea = sheetWidth * sheetHeight;
 
   if (sheetArea >= 2.88) {

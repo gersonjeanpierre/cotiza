@@ -5,9 +5,9 @@ export interface Order {
   order_status_id: number;
   total_amount: number;
   profit_margin: number;
-  discount_applied: number;
+  discount_applied?: number;
   final_amount: number;
-  payment_method?: string;
+  payment_method: string;
   shipping_address?: string;
   notes?: string;
   details?: Details[];

@@ -9,7 +9,6 @@ export interface Cart {
 
 
 export interface CartItem {
-  id?: number;
   product_id: number;
   height: number | null;
   width: number | null;
@@ -19,7 +18,6 @@ export interface CartItem {
 }
 
 export interface ProductExtraOption {
-  id?: number;
   extra_option_id: number;
   quantity: number | null;
   linear_meter?: number | null;

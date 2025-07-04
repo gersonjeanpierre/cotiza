@@ -1,10 +1,10 @@
 import { DecimalPipe } from '@angular/common';
-import { ChangeDetectorRef, Component, ElementRef, OnInit, Output, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { Cart, CartItem } from '@core/models/cart';
 import { Product } from '@core/models/product';
 import { CartIndexedDBService } from '@features/quotations/services/cart-idb';
 import { ProductIndexedDBService } from '@features/quotations/services/products-idb';
-import { calculateFramePrice, calculateLaborPrice, calculateTermoselladoPrice } from '@shared/utils/extraOptionList';
+import { getProductPrice, getPriceExtraOption, convertNumberToText } from '@shared/utils/priceDisplay';
 
 @Component({
   selector: 'app-cart-modal',
@@ -23,6 +23,16 @@ export class CartModal implements OnInit {
 
   displayCart: any[] = [];
 
+  typeClient: string = 'final'; // Tipo de cliente, puede ser 'final' o 'imprentero'
+  totalAmount: number = 0; // Total del carrito
+  profitMargin: number = 0; // Margen de ganancia 
+  finalAmount: number = 0; // Monto final del carrito
+  totalToText: string = ''; // Total en texto
+
+
+  igv: number = 0.18; // Porcentaje del IGV (18%)
+  totalIgv: number = 0; // Total del IGV calculado
+
   constructor(
     private cartIDBService: CartIndexedDBService,
     private productIDBService: ProductIndexedDBService,
@@ -40,6 +50,11 @@ export class CartModal implements OnInit {
 
   async loadCart(): Promise<void> {
     this.cart = await this.cartIDBService.getLastCart();
+    const isFinalClient = this.cart?.customer.type_client.name.includes('Final');
+    this.typeClient = isFinalClient ? 'final' : 'imprentero';
+
+    this.profitMargin = this.cart?.customer?.type_client?.margin ?? 0;
+
     this.allProducts = await this.productIDBService.getAll();
 
     this.cartItems = this.cart?.items;
@@ -54,35 +69,65 @@ export class CartModal implements OnInit {
             return {
               ...itemExtOpt,
               name: extra?.name,
-              price: this.getPriceExtraOption(extra?.id ?? 0, item.linear_meter, item.width, itemExtOpt.linear_meter, itemExtOpt.width, extra?.price ?? 0, itemExtOpt.giga_select),
-              // price: extra?.id == 14 // Si es la opción de mano de obra, calculamos el precio
-              //   ? calculateLaborPrice(itemExtOpt.linear_meter ?? 0, itemExtOpt.width ?? 0, extra?.price)
-              //   : extra?.price,
+              price: (Number(getPriceExtraOption(
+                extra?.id ?? 0,
+                item.linear_meter,
+                item.width,
+                itemExtOpt.linear_meter,
+                itemExtOpt.width,
+                extra?.price ?? 0,
+                itemExtOpt.giga_select,
+                this.profitMargin,
+                this.igv
+              )) || 0),
               description: extra?.description
 
             }
           }
         ) ?? [];
+
+        const subtotalExtraOnly = itemExtra.reduce(
+          (sum, extra) => sum + ((extra.price ?? 0) * (extra.quantity ?? 0) || 0),
+          0
+        );
+        const subtotalProductOnly = getProductPrice(
+          products?.id ?? 0,
+          products?.price ?? 0,
+          this.typeClient,
+          item.quantity ?? 1,
+          item.height ?? 1, // Altura por defecto 1
+          item.width ?? 1, // Ancho por defecto 1
+          this.profitMargin,
+          this.igv
+        ) * (item.quantity ?? 1);
+
         return {
           ...item,
           sku: products?.sku,
           name: products?.name,
-          price: products?.price,
+          price: getProductPrice(
+            products?.id ?? 0,
+            products?.price ?? 0,
+            this.typeClient,
+            item.quantity ?? 1,
+            item.height ?? 1, // Altura por defecto 1
+            item.width ?? 1, // Ancho por defecto 1
+            this.profitMargin,
+            this.igv
+          ),
           image: products?.image_url,
           description: products?.description,
           product_extra_options: itemExtra,
-          subtotalExtra: itemExtra.reduce(
-            (sum, extra) => sum + ((extra.price ?? 0) * (extra.quantity ?? 0) || 0),
-            0
-          ),
-          subtotalProduct: (products?.price ?? 0) * (item.quantity ?? 0) + itemExtra.reduce(
-            (sum, extra) => sum + ((extra.price ?? 0) * (extra.quantity ?? 0) || 0),
-            0
-          )
+          subtotalExtra: subtotalExtraOnly,
+          subtotalProduct: subtotalProductOnly + subtotalExtraOnly,
         }
       }
     )
     this.displayCart = displayCart || [];
+    this.finalAmount = this.getTotalCart();
+    this.totalAmount = (this.finalAmount / (1 + this.igv));
+    this.totalIgv = this.totalAmount * this.igv;
+    this.totalToText = convertNumberToText(this.finalAmount);
 
     console.log('Display:', this.displayCart);
 
@@ -104,32 +149,4 @@ export class CartModal implements OnInit {
     await this.cartIDBService.deleteCartItem(this.cart.id, productId);
     await this.loadCart(); // Recarga el carrito para reflejar los cambios
   }
-
-  getPriceExtraOption(
-    extra_option_id: number,
-    linear_meter: number | null = null, // Product linear meter
-    width: number | null = null, // Product width
-    linear_meter_eo: number | null = null, // Extra option linear meter
-    width_eo: number | null = null, // Extra option width
-    price: number,
-    giga_select: string | null = null
-  ) {
-    let priceExtraOption: number | void = price
-
-    if (extra_option_id == 14) {
-      priceExtraOption = calculateLaborPrice(linear_meter_eo ?? 0, width_eo ?? 0, price ?? 0);
-    }
-    if (extra_option_id == 1) {
-      priceExtraOption = calculateTermoselladoPrice(price ?? 0, width ?? 0, linear_meter ?? 0, giga_select ?? '')
-    }
-    if (extra_option_id == 2) {
-      priceExtraOption = calculateTermoselladoPrice(price ?? 0, width ?? 0, linear_meter ?? 0, giga_select ?? '');
-    }
-    if (extra_option_id == 4) {
-      priceExtraOption = calculateFramePrice(price ?? 0, width ?? 0, linear_meter ?? 0, giga_select ?? '');
-    }
-
-    return priceExtraOption;
-  }
-
 }

@@ -1,5 +1,6 @@
 import { Injectable } from "@angular/core";
 import { Cart, CartItem, ProductExtraOption } from "@core/models/cart";
+import { Customer } from "@core/models/customer";
 import { CotizaDB } from "@shared/sync/dexie-db";
 
 @Injectable({ providedIn: 'root' })
@@ -139,6 +140,15 @@ export class CartIndexedDBService {
     cart.items.splice(itemIndex, 1);
 
     // Guarda el cart actualizado
+    await this.db.carts.put(cart);
+  }
+
+  async updateCustomer(customerId: number, customerData: Customer): Promise<void> {
+    const cart = await this.db.carts.where('customer_id').equals(customerId).first();
+    if (!cart) {
+      throw new Error(`El cart con ID ${customerId} no fue encontrado`);
+    }
+    cart.customer = customerData; // Reemplaza el objeto customer completo
     await this.db.carts.put(cart);
   }
 }

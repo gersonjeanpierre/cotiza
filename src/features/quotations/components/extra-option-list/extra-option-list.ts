@@ -4,13 +4,14 @@ import { ExtraOption } from '@core/models/extra-option';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { ProductIndexedDBService } from '@features/quotations/services/products-idb';
 import { CurrencyPipe } from '@angular/common';
-import { calculateCeltexFoamPriceAndSheets, calculateLaborPrice } from '@shared/utils/extraOptionList';
+import { calculateCeltexFoamPriceAndSheets, calculateLaborPrice, getPriceGigaForTypeClient } from '@shared/utils/extraOptionList';
 import { CustomerModal } from '@features/customer/components/customer-modal/customer-modal';
 import { Customer } from '@core/models/customer';
 import { CartItem, ProductExtraOption } from '@core/models/cart';
 import { Cart } from '@core/models/cart';
 import { CartIndexedDBService } from '@features/quotations/services/cart-idb';
 import { CustomerService } from '@features/customer/service/customer';
+import { getProductPrice } from '@shared/utils/priceDisplay';
 
 @Component({
   selector: 'app-extra-option-list',
@@ -49,10 +50,11 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
     this.selectedCustomer = customer;
     console.log('Cliente seleccionado:', this.selectedCustomer);
 
+    await this.cartIDBService.updateCustomer(this.selectedCustomer.id, customer);
     const customerCart = await this.cartIDBService.getByCustomerId(this.selectedCustomer.id);
 
     if (customerCart) {
-      // Si ya existe un carrito para este cliente, lo usamos
+
       this.cart = customerCart;
       this.cartIDBService.deleteCart(this.cart.id ?? 0);
       this.cart = null
@@ -102,6 +104,7 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
   isCalculating: boolean = false;
   nameProduct: string = '';
   priceBase: number = 0;
+  priceBaseMarginIGV: number = 0; // Precio del producto
   priceUnit: number = 0;
   priceQuantity: number = 0;
   priceMeterSquare: number = 0; // Precio por Metro Cuadrado
@@ -198,14 +201,39 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
   }
 
   onSubmit() {
+    const isFinalClient = this.cart?.customer.type_client.name.includes('Final');
+    const typeClient = isFinalClient ? 'final' : 'imprentero';
     this.isCalculating = true;
     this.width = this.dimensionsForm.get('width')?.value ?? 0;
     this.height = this.dimensionsForm.get('height')?.value ?? 0;
     this.area = parseFloat((this.width * this.height).toFixed(4));
     this.quantity = this.dimensionsForm.get('quantity')?.value ?? 1;
-    this.priceUnit = this.height * this.priceBase
+    if (this.productId === 1) {
+      if (this.height <= 1) {
+        this.height = 1; // Aseguramos que el alto sea al menos 1 metro
+      }
+      if (this.width <= 1) {
+        this.width = 1; // Aseguramos que el ancho sea al menos 1 metro
+      }
+      this.area = parseFloat((this.width * this.height).toFixed(4));
+      this.priceBase = getPriceGigaForTypeClient(typeClient, this.quantity) * (1.18) * (1 + (this.cart?.customer?.type_client?.margin ?? 0));
+    }
+    this.priceBaseMarginIGV = getProductPrice(
+      this.productId,
+      this.priceBase,
+      typeClient,
+      this.quantity,
+      this.height,
+      this.width,
+      this.cart?.customer?.type_client?.margin ?? 0,
+      0.18 // IGV default value
+    )
+
+    console.log('Precio Base con Margen e IGV:', this.priceBaseMarginIGV);
+    this.priceUnit = this.height * this.priceBaseMarginIGV
     this.priceQuantity = this.priceUnit * this.quantity;
-    this.priceMeterSquare = this.priceBase * this.area;
+    this.priceMeterSquare = this.priceBaseMarginIGV;
+
     this.priceQuantityMS = this.priceMeterSquare * this.quantity;
     this.extraOptionVinForm.get('height')?.setValue(this.height);// Metro Lineal
     console.log('Área calculada:', this.area);
