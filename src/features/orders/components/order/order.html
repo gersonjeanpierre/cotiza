@@ -1,1 +1,19 @@
-<p>order works!</p>
+<div>
+  <div class="stats stats-vertical lg:stats-horizontal shadow-2xl">
+    <div class="stat">
+      <div class="stat-title text-2xl">Gravado</div>
+      <div class="stat-value">{{ totalAmount | currency: "S/." }}</div>
+    </div>
+
+    <div class="stat">
+      <div class="stat-title text-2xl">IGV (18%)</div>
+      <div class="stat-value">{{ totalIgv | currency: "S/." }}</div>
+    </div>
+
+    <div class="stat">
+      <div class="stat-title text-2xl">Monto Total</div>
+      <div class="stat-value">{{ finalAmount | currency: "S/." }}</div>
+    </div>
+  </div>
+  <form action=""></form>
+</div>

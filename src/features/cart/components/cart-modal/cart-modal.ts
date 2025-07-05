@@ -123,7 +123,7 @@ export class CartModal implements OnInit {
           description: products?.description,
           product_extra_options: itemExtra,
           subtotalExtra: subtotalExtraOnly,
-          subtotalProduct: subtotalProductOnly + subtotalExtraOnly,
+          subtotalProduct: Number((subtotalProductOnly + subtotalExtraOnly).toFixed(2)),
         }
       }
     )
@@ -162,12 +162,14 @@ export class CartModal implements OnInit {
       state: {
         cart: this.cart,
         displayCart: this.displayCart,
+        totalAmount: this.totalAmount,
+        totalIgv: this.totalIgv,
+        finalAmount: this.finalAmount,
       }
     });
   }
 
   closeModal(): void {
     this.dialog.nativeElement.close();
-
   }
 }

@@ -122,7 +122,7 @@ export const calculateFramePrice = (
 
     // Mano de obra interna (75% del costo material)
     const manoObraInterna = costoMaterial * 0.75;
-    return (costoMaterial + manoObraInterna);
+    return Number((costoMaterial + manoObraInterna).toFixed(2));
   }
 }
 
@@ -263,7 +263,7 @@ export const calculateLaborPrice = (
     basePrice = 5.00;
   } else {
     const factor = (sheetArea - 1.0) / (2.88 - 1.0);
-    basePrice = (5.00 + (factor * 5.00));
+    basePrice = (5.00 + (Number(factor.toFixed(2)) * 5.00));
   }
   return basePrice;
 }

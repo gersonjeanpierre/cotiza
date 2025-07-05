@@ -11,6 +11,8 @@ import { ProductService } from '@features/product/service/product';
 import { ProductIndexedDBService } from '@features/quotations/services/products-idb';
 
 import { loadToIndexedDB } from '@shared/sync/dexie-db';
+import { OrderStatusesService } from '@features/order-statuses/service/order-statuses';
+import { OrderStatusesIndexedDBService } from '@features/orders/service/order-statuses-idb';
 
 @Component({
   selector: 'app-quotation-home',
@@ -30,6 +32,9 @@ export class QuotationHome implements OnInit {
 
     private typeClientService: TypeClientService,
     private typeClientIDB: TypeClientIndexedDBService,
+
+    private orderStatusesService: OrderStatusesService,
+    private orderStatusesIDB: OrderStatusesIndexedDBService
   ) { }
 
   async ngOnInit(): Promise<void> {
@@ -37,6 +42,7 @@ export class QuotationHome implements OnInit {
     await loadToIndexedDB(this.productTypeIDB, this.productTypeService);
     await loadToIndexedDB(this.productsIDB, this.productService);
     await loadToIndexedDB(this.typeClientIDB, this.typeClientService);
+    await loadToIndexedDB(this.orderStatusesIDB, this.orderStatusesService);
 
   }
 
