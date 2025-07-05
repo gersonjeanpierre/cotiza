@@ -19,12 +19,12 @@ export const getProductPrice = (
     if (width <= 1) {
       width = 1;
     }
-    const area = height * width;
+    const area = Number((height * width).toFixed(2));
     productPriceFinal = getPriceGigaForTypeClient(typeClient, quantity) * area;
   } else if (productId >= 2 && productId <= 9) {
     productPriceFinal = getPriceVinylForTypeClient(productId, typeClient, productPrice);
   }
-  return profitMarginAndIgv * productPriceFinal;
+  return Number((profitMarginAndIgv * productPriceFinal).toFixed(2));
 }
 
 export const getPriceExtraOption = (
@@ -44,10 +44,10 @@ export const getPriceExtraOption = (
     priceExtraOption = Number(calculateLaborPrice(linear_meter_eo ?? 0, width_eo ?? 0, price ?? 0).toFixed(2));
   }
   if (extra_option_id == 1) {
-    priceExtraOption = calculateTermoselladoPrice(price ?? 0, width ?? 0, linear_meter ?? 0, giga_select ?? '')
+    priceExtraOption = Number(calculateTermoselladoPrice(price ?? 0, width ?? 0, linear_meter ?? 0, giga_select ?? '').toFixed(2));
   }
   if (extra_option_id == 2) {
-    priceExtraOption = calculateTermoselladoPrice(price ?? 0, width ?? 0, linear_meter ?? 0, giga_select ?? '');
+    priceExtraOption = Number(calculateTermoselladoPrice(price ?? 0, width ?? 0, linear_meter ?? 0, giga_select ?? '').toFixed(2));
   }
   if (extra_option_id == 4) {
     priceExtraOption = calculateFramePrice(price ?? 0, width ?? 0, linear_meter ?? 0, giga_select ?? '');

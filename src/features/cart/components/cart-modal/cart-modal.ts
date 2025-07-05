@@ -1,7 +1,9 @@
 import { DecimalPipe } from '@angular/common';
 import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Router } from '@angular/router';
 import { Cart, CartItem } from '@core/models/cart';
 import { Product } from '@core/models/product';
+import { DisplayCartIndexedDBService } from '@features/orders/service/display-cart-idb';
 import { CartIndexedDBService } from '@features/quotations/services/cart-idb';
 import { ProductIndexedDBService } from '@features/quotations/services/products-idb';
 import { getProductPrice, getPriceExtraOption, convertNumberToText } from '@shared/utils/priceDisplay';
@@ -36,7 +38,9 @@ export class CartModal implements OnInit {
   constructor(
     private cartIDBService: CartIndexedDBService,
     private productIDBService: ProductIndexedDBService,
-    private cdr: ChangeDetectorRef
+    private displayCartIDBService: DisplayCartIndexedDBService,
+    private cdr: ChangeDetectorRef,
+    private router: Router,
   ) { }
 
   async ngOnInit(): Promise<void> {
@@ -119,7 +123,7 @@ export class CartModal implements OnInit {
           description: products?.description,
           product_extra_options: itemExtra,
           subtotalExtra: subtotalExtraOnly,
-          subtotalProduct: subtotalProductOnly + subtotalExtraOnly,
+          subtotalProduct: Number((subtotalProductOnly + subtotalExtraOnly).toFixed(2)),
         }
       }
     )
@@ -148,5 +152,24 @@ export class CartModal implements OnInit {
     if (!this.cart?.id) return;
     await this.cartIDBService.deleteCartItem(this.cart.id, productId);
     await this.loadCart(); // Recarga el carrito para reflejar los cambios
+  }
+
+  proceedToPayment(): void {
+    if (!this.cart?.id) return;
+    this.displayCartIDBService.saveAll(this.displayCart);
+    this.dialog.nativeElement.close();
+    this.router.navigate([`/dashboard/pedidos/nuevo/${this.cart.id}`], {
+      state: {
+        cart: this.cart,
+        displayCart: this.displayCart,
+        totalAmount: this.totalAmount,
+        totalIgv: this.totalIgv,
+        finalAmount: this.finalAmount,
+      }
+    });
+  }
+
+  closeModal(): void {
+    this.dialog.nativeElement.close();
   }
 }
