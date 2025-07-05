@@ -84,8 +84,20 @@
                 <td></td>
                 <td></td>
                 <td>
+                  <!-- Giga -->
+
                   <!-- Laminados -->
                   {{ extra.name }}
+                  @if (
+                    extra.extra_option_id >= 1 && extra.extra_option_id <= 4
+                  ) {
+                    @if (extra.extra_option_id === 1) {
+                      <span> | Seleccionado: {{ extra.giga_select }} </span>
+                    }
+                    @if (extra.extra_option_id === 2) {
+                      <span> | Seleccionado: {{ extra.giga_select }} </span>
+                    }
+                  }
                   @if (
                     extra.linear_meter &&
                     extra.extra_option_id >= 5 &&
@@ -142,6 +154,12 @@
           </tr>
         </tbody>
       </table>
+    </div>
+    <div class="modal-action">
+      <button class="btn btn-primary" [disabled]="!displayCart.length">
+        Proceder al Pago
+      </button>
+      <button class="btn">Cerrar</button>
     </div>
   </div>
 </dialog>

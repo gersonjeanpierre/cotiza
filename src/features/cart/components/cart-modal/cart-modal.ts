@@ -69,7 +69,7 @@ export class CartModal implements OnInit {
             return {
               ...itemExtOpt,
               name: extra?.name,
-              price: (Number(getPriceExtraOption(
+              price: Number(getPriceExtraOption(
                 extra?.id ?? 0,
                 item.linear_meter,
                 item.width,
@@ -79,18 +79,18 @@ export class CartModal implements OnInit {
                 itemExtOpt.giga_select,
                 this.profitMargin,
                 this.igv
-              )) || 0),
+              ).toFixed(2)),
               description: extra?.description
 
             }
           }
         ) ?? [];
 
-        const subtotalExtraOnly = itemExtra.reduce(
-          (sum, extra) => sum + ((extra.price ?? 0) * (extra.quantity ?? 0) || 0),
+        const subtotalExtraOnly = Number(itemExtra.reduce(
+          (sum, extra) => sum + ((extra.price) * (extra.quantity ?? 0) || 0),
           0
-        );
-        const subtotalProductOnly = getProductPrice(
+        ).toFixed(2));
+        const subtotalProductOnly = Number(getProductPrice(
           products?.id ?? 0,
           products?.price ?? 0,
           this.typeClient,
@@ -99,13 +99,13 @@ export class CartModal implements OnInit {
           item.width ?? 1, // Ancho por defecto 1
           this.profitMargin,
           this.igv
-        ) * (item.quantity ?? 1);
+        ).toFixed(2)) * (item.quantity ?? 1);
 
         return {
           ...item,
           sku: products?.sku,
           name: products?.name,
-          price: getProductPrice(
+          price: Number(getProductPrice(
             products?.id ?? 0,
             products?.price ?? 0,
             this.typeClient,
@@ -114,7 +114,7 @@ export class CartModal implements OnInit {
             item.width ?? 1, // Ancho por defecto 1
             this.profitMargin,
             this.igv
-          ),
+          ).toFixed(2)),
           image: products?.image_url,
           description: products?.description,
           product_extra_options: itemExtra,
@@ -124,9 +124,9 @@ export class CartModal implements OnInit {
       }
     )
     this.displayCart = displayCart || [];
-    this.finalAmount = this.getTotalCart();
-    this.totalAmount = (this.finalAmount / (1 + this.igv));
-    this.totalIgv = this.totalAmount * this.igv;
+    this.finalAmount = Number(this.getTotalCart().toFixed(2));
+    this.totalAmount = Number((this.finalAmount / (1 + this.igv)).toFixed(2));
+    this.totalIgv = Number((this.totalAmount * this.igv).toFixed(2));
     this.totalToText = convertNumberToText(this.finalAmount);
 
     console.log('Display:', this.displayCart);

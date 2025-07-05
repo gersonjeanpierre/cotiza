@@ -44,7 +44,7 @@
   <h2 class="text-3xl font-bold mb-2">{{ nameProduct }}</h2>
   @if (productId == 1) {
     <p class="font-medium mb-3">
-      Precio Metro Cuadrado: {{ priceBase | currency: "S/." }}
+      Precio Metro Cuadrado: {{ priceBaseMarginIGV | currency: "S/." }}
     </p>
   } @else {
     <p class="font-medium mb-3">

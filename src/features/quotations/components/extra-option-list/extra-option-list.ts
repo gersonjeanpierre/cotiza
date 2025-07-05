@@ -196,6 +196,36 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
           this.cartId = customerCart.id ?? 0;
         }
       }
+      const isFinalClient = this.cart?.customer.type_client.name.includes('Final');
+      const typeClient = isFinalClient ? 'final' : 'imprentero';
+
+      this.priceBaseMarginIGV = getProductPrice(
+        this.productId,
+        this.priceBase,
+        typeClient,
+        this.quantity,
+        this.height,
+        this.width,
+        this.cart?.customer?.type_client?.margin ?? 0,
+        0.18 // IGV default value
+      )
+
+      this.dimensionsForm.get('quantity')?.valueChanges.subscribe((qty: number | null) => {
+        this.quantity = qty ?? 1;
+        const isFinalClient = this.cart?.customer.type_client.name.includes('Final');
+        const typeClient = isFinalClient ? 'final' : 'imprentero';
+        this.priceBaseMarginIGV = getProductPrice(
+          this.productId,
+          this.priceBase,
+          typeClient,
+          this.quantity,
+          this.height,
+          this.width,
+          this.cart?.customer?.type_client?.margin ?? 0,
+          0.18 // IGV default value
+        );
+        this.cdr.detectChanges();
+      });
       this.cdr.detectChanges();
     })
   }
@@ -218,7 +248,7 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
       this.area = parseFloat((this.width * this.height).toFixed(4));
       this.priceBase = getPriceGigaForTypeClient(typeClient, this.quantity) * (1.18) * (1 + (this.cart?.customer?.type_client?.margin ?? 0));
     }
-    this.priceBaseMarginIGV = getProductPrice(
+    this.priceBaseMarginIGV = Number(getProductPrice(
       this.productId,
       this.priceBase,
       typeClient,
@@ -227,14 +257,14 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
       this.width,
       this.cart?.customer?.type_client?.margin ?? 0,
       0.18 // IGV default value
-    )
+    ).toFixed(2));
 
     console.log('Precio Base con Margen e IGV:', this.priceBaseMarginIGV);
     this.priceUnit = this.height * this.priceBaseMarginIGV
     this.priceQuantity = this.priceUnit * this.quantity;
     this.priceMeterSquare = this.priceBaseMarginIGV;
 
-    this.priceQuantityMS = this.priceMeterSquare * this.quantity;
+    this.priceQuantityMS = Number((this.priceMeterSquare * this.quantity).toFixed(2));
     this.extraOptionVinForm.get('height')?.setValue(this.height);// Metro Lineal
     console.log('Área calculada:', this.area);
     console.log('Ancho:', this.width, 'Alto:', this.height);
@@ -265,16 +295,16 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
       const valueEnmarcado = this.extraOptionGigaForm.get('enmarcado')?.value ?? null;
       console.log('Giga form Values:', this.extraOptionGigaForm.value);
       if (valueTermosellado) {
-        this.setCartExtraOptionGiga(ids[0].termoId, valueTermosellado);
+        this.setCartExtraOptionGiga(ids[0].termoId, 1, valueTermosellado);
       }
       if (valueTuboColgante) {
-        this.setCartExtraOptionGiga(ids[0].tuboId, valueTuboColgante);
+        this.setCartExtraOptionGiga(ids[0].tuboId, 1, valueTuboColgante);
       }
       if (valueOjales) {
-        this.setCartExtraOptionGiga(ids[0].ojalesId);
+        this.setCartExtraOptionGiga(ids[0].ojalesId, valueOjales);
       }
       if (valueEnmarcado) {
-        this.setCartExtraOptionGiga(ids[0].enmarcadoId, valueEnmarcado);
+        this.setCartExtraOptionGiga(ids[0].enmarcadoId, 1, valueEnmarcado);
       }
 
       this.cartIDBService.saveCartExtraOptions(this.cartExtraOptions, this.cartId, this.productId);
@@ -315,33 +345,33 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
 
   }
 
-  setCartExtraOptionGiga(id: number, giga_select: string | null = null) {
+  setCartExtraOptionGiga(id: number, quantity: number = 1, giga_select: string | null = null) {
     const gigaForm = this.extraOptionGigaForm.value;
     if (id === 1) { // Termosellado
       this.cartExtraOptions.push({
         extra_option_id: id,
-        quantity: this.quantity ?? null,
+        quantity: this.quantity,
         giga_select: giga_select,
       });
     }
     if (id === 2) { // Tubo Colgante
       this.cartExtraOptions.push({
         extra_option_id: id,
-        quantity: this.quantity ?? null,
+        quantity: this.quantity,
         giga_select: giga_select,
       });
     }
     if (id === 3) { // Ojales
       this.cartExtraOptions.push({
         extra_option_id: id,
-        quantity: (gigaForm.ojales ?? 1 * this.quantity),
+        quantity: (quantity * this.quantity),
         giga_select: giga_select,
       });
     }
     if (id === 4) { // Enmarcado
       this.cartExtraOptions.push({
         extra_option_id: id,
-        quantity: this.quantity ?? null,
+        quantity: this.quantity,
         giga_select: giga_select,
       });
     }
