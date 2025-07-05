@@ -149,6 +149,9 @@ export class CartIndexedDBService {
       throw new Error(`El cart con ID ${customerId} no fue encontrado`);
     }
     cart.customer = customerData; // Reemplaza el objeto customer completo
+    console.log('### cartIDBService.updateCustomer ###');
+    console.log('### cart antes de actualizar ###', cart);
+    // Guarda el cart actualizado
     await this.db.carts.put(cart);
   }
 }

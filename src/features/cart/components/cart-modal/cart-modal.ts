@@ -3,6 +3,7 @@ import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@an
 import { Router } from '@angular/router';
 import { Cart, CartItem } from '@core/models/cart';
 import { Product } from '@core/models/product';
+import { DisplayCartIndexedDBService } from '@features/orders/service/display-cart-idb';
 import { CartIndexedDBService } from '@features/quotations/services/cart-idb';
 import { ProductIndexedDBService } from '@features/quotations/services/products-idb';
 import { getProductPrice, getPriceExtraOption, convertNumberToText } from '@shared/utils/priceDisplay';
@@ -37,6 +38,7 @@ export class CartModal implements OnInit {
   constructor(
     private cartIDBService: CartIndexedDBService,
     private productIDBService: ProductIndexedDBService,
+    private displayCartIDBService: DisplayCartIndexedDBService,
     private cdr: ChangeDetectorRef,
     private router: Router,
   ) { }
@@ -154,10 +156,18 @@ export class CartModal implements OnInit {
 
   proceedToPayment(): void {
     if (!this.cart?.id) return;
-    this.router.navigate(['/dashboard/pedidos']); // Redirige a la página de pago con el ID del carrito
+    this.displayCartIDBService.saveAll(this.displayCart);
     this.dialog.nativeElement.close();
-    // Redirigir a la página de pago
-    // Aquí puedes usar el router para navegar a la página de pago
-    // this.router.navigate(['/payment']);
+    this.router.navigate([`/dashboard/pedidos/nuevo/${this.cart.id}`], {
+      state: {
+        cart: this.cart,
+        displayCart: this.displayCart,
+      }
+    });
+  }
+
+  closeModal(): void {
+    this.dialog.nativeElement.close();
+
   }
 }

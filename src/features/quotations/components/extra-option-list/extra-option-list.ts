@@ -50,29 +50,53 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
     this.selectedCustomer = customer;
     console.log('Cliente seleccionado:', this.selectedCustomer);
 
-    await this.cartIDBService.updateCustomer(this.selectedCustomer.id, customer);
-    const customerCart = await this.cartIDBService.getByCustomerId(this.selectedCustomer.id);
+    // 1. Buscar si existe un cart para este cliente
+    let customerCart = await this.cartIDBService.getByCustomerId(this.selectedCustomer.id);
 
-    if (customerCart) {
-
-      this.cart = customerCart;
-      this.cartIDBService.deleteCart(this.cart.id ?? 0);
-      this.cart = null
-      this.cart = {
-        customer_id: customerCart.customer_id,
-        customer: customerCart.customer,
-        items: customerCart.items,
-      }
-      this.cartIDBService.saveCart([this.cart]);
-    }
-    else {
-      // Si no existe, creamos un nuevo carrito
+    // 2. Si NO existe, crearlo
+    if (!customerCart) {
       this.cart = {
         customer_id: this.selectedCustomer.id,
         customer: this.selectedCustomer,
+        items: [],
       };
-      this.cartIDBService.saveCart([this.cart]);
+      await this.cartIDBService.saveCart([this.cart]);
+      customerCart = await this.cartIDBService.getByCustomerId(this.selectedCustomer.id);
+      this.cart = customerCart ?? null;
+      this.cartId = customerCart?.id ?? 0;
       console.log('Nuevo carrito creado:', this.cart);
+    }
+
+    // 3. Si existe, actualizar el customer en el cart
+    if (customerCart) {
+      await this.cartIDBService.updateCustomer(this.selectedCustomer.id, customer);
+      // Recuperar el cart actualizado
+      customerCart = await this.cartIDBService.getByCustomerId(this.selectedCustomer.id);
+
+      // 4. Eliminar el cart y volver a crearlo con toda la data
+      const cartData = {
+        customer_id: customerCart!.customer_id,
+        customer: customerCart!.customer,
+        items: customerCart!.items,
+      };
+      await this.cartIDBService.deleteCart(customerCart!.id ?? 0);
+      await this.cartIDBService.saveCart([cartData]);
+      this.cart = await this.cartIDBService.getByCustomerId(this.selectedCustomer.id) ?? null;
+      console.log('Cart eliminado y recreado:', this.cart);
+      this.cartId = this.cart?.id ?? 0;
+      const isFinalClient = this.cart?.customer.type_client.name.includes('Final');
+      const typeClient = isFinalClient ? 'final' : 'imprentero';
+      this.priceBaseMarginIGV = getProductPrice(
+        this.productId,
+        this.priceBase,
+        typeClient,
+        this.quantity,
+        this.height,
+        this.width,
+        this.cart?.customer?.type_client?.margin ?? 0,
+        0.18 // IGV default value
+      );
+      this.cdr.detectChanges();
     }
   }
 
@@ -339,7 +363,11 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
 
       console.log('Cart Extra Options:', this.cartExtraOptions);
 
-      this.cartIDBService.saveCartExtraOptions(this.cartExtraOptions, this.cartId, this.productId)
+      if (this.cartId !== 0) {
+        this.cartIDBService.saveCartExtraOptions(this.cartExtraOptions, this.cartId, this.productId);
+      } else {
+        console.error('No se puede guardar opciones extra: el carrito aún no tiene un id válido.');
+      }
     }
 
 

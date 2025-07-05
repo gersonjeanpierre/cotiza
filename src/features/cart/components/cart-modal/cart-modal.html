@@ -9,7 +9,7 @@
     <div
       class="overflow-x-auto rounded-box border border-base-content/5 bg-base-100"
     >
-      <table class="table">
+      <table class="table table-sm">
         <!-- head -->
         <thead>
           <tr>
@@ -73,7 +73,7 @@
                 <td></td>
                 <td
                   colspan="4"
-                  class="badge badge-neutral badge-outline ml-3 font-bold py-0"
+                  class="badge badge-neutral badge-outline ml-3 py-0 text-sm"
                 >
                   Extras
                 </td>
@@ -133,7 +133,9 @@
           }
           <tr>
             <td colspan="4"></td>
-            <td class="text-right font-bold border-2">Gravado (S/.):</td>
+            <td class="text-right font-bold border-2 rounded-b-md">
+              Gravado (S/.):
+            </td>
             <td class="font-bold text-right border-2">
               {{ totalAmount | number: "1.2-2" }}
             </td>
@@ -163,7 +165,7 @@
       >
         Proceder al Pago
       </button>
-      <button class="btn">Cerrar</button>
+      <button (click)="closeModal()" class="btn">Cerrar</button>
     </div>
   </div>
 </dialog>

@@ -25,6 +25,30 @@ export interface ProductExtraOption {
   giga_select?: string | null;
 }
 
-export interface DisplayCartItem {
 
+export interface DisplayCartItem {
+  product_id?: number;
+  height?: number | null;
+  width?: number | null;
+  quantity?: number;
+  linear_meter?: number | null;
+  product_extra_options?: DisplayProductExtraOption[];
+  sku?: string;
+  name?: string;
+  price?: number;
+  image?: string;
+  description?: string;
+  subtotalExtra?: number;
+  subtotalProduct?: number;
+}
+
+export interface DisplayProductExtraOption {
+  extra_option_id: number;
+  quantity?: number;
+  linear_meter?: number;
+  width?: number;
+  giga_select?: string;
+  name?: string;
+  price?: number;
+  description?: string;
 }
