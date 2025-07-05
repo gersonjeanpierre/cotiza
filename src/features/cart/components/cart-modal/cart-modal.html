@@ -156,7 +156,11 @@
       </table>
     </div>
     <div class="modal-action">
-      <button class="btn btn-primary" [disabled]="!displayCart.length">
+      <button
+        class="btn btn-primary"
+        (click)="proceedToPayment()"
+        [disabled]="!displayCart.length"
+      >
         Proceder al Pago
       </button>
       <button class="btn">Cerrar</button>

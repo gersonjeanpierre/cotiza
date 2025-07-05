@@ -1,5 +1,6 @@
 import { DecimalPipe } from '@angular/common';
 import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Router } from '@angular/router';
 import { Cart, CartItem } from '@core/models/cart';
 import { Product } from '@core/models/product';
 import { CartIndexedDBService } from '@features/quotations/services/cart-idb';
@@ -36,7 +37,8 @@ export class CartModal implements OnInit {
   constructor(
     private cartIDBService: CartIndexedDBService,
     private productIDBService: ProductIndexedDBService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private router: Router,
   ) { }
 
   async ngOnInit(): Promise<void> {
@@ -148,5 +150,14 @@ export class CartModal implements OnInit {
     if (!this.cart?.id) return;
     await this.cartIDBService.deleteCartItem(this.cart.id, productId);
     await this.loadCart(); // Recarga el carrito para reflejar los cambios
+  }
+
+  proceedToPayment(): void {
+    if (!this.cart?.id) return;
+    this.router.navigate(['/dashboard/pedidos']); // Redirige a la página de pago con el ID del carrito
+    this.dialog.nativeElement.close();
+    // Redirigir a la página de pago
+    // Aquí puedes usar el router para navegar a la página de pago
+    // this.router.navigate(['/payment']);
   }
 }

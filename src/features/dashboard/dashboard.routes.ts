@@ -18,6 +18,10 @@ export const dashboardRoutes: Routes = [
         path: 'cotizaciones',
         loadChildren: () => import('../quotations/quotations.routes')
       },
+      {
+        path: 'pedidos',
+        loadChildren: () => import('../orders/orders.routes')
+      },
     ]
   },
 
