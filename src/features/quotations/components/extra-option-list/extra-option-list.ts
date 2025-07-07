@@ -7,11 +7,12 @@ import { CurrencyPipe } from '@angular/common';
 import { calculateCeltexFoamPriceAndSheets, calculateLaborPrice, getPriceGigaForTypeClient } from '@shared/utils/extraOptionList';
 import { CustomerModal } from '@features/customer/components/customer-modal/customer-modal';
 import { Customer } from '@core/models/customer';
-import { CartItem, ProductExtraOption } from '@core/models/cart';
+import { CartItem, MyCart, MyCartDetail, MyCartDetailExtraOption, ProductExtraOption } from '@core/models/cart';
 import { Cart } from '@core/models/cart';
 import { CartIndexedDBService } from '@features/quotations/services/cart-idb';
 import { CustomerService } from '@features/customer/service/customer';
 import { getProductPrice } from '@shared/utils/priceDisplay';
+import { MyCartIndexedDBService } from '@features/cart/service/my-cart-idb';
 
 @Component({
   selector: 'app-extra-option-list',
@@ -31,6 +32,9 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
   cartItem: CartItem[] = [];
   cartExtraOptions: ProductExtraOption[] = [];
 
+  myCart: MyCart | null = null; // Carrito de compras del usuario
+  myCartDetail: MyCartDetail | null = null; // Detalles del carrito de compras
+  myCartDetailExtraOption: MyCartDetailExtraOption | null = null; // Detalles de las opciones extra del carrito
 
   ngAfterViewInit(): void {
     // Es una buena práctica verificar que la referencia ya esté disponible
@@ -52,6 +56,8 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
 
     // 1. Buscar si existe un cart para este cliente
     let customerCart = await this.cartIDBService.getByCustomerId(this.selectedCustomer.id);
+    let customerMyCart = await this.myCartIDBService.getByCustomerId(this.selectedCustomer.id);
+
 
     // 2. Si NO existe, crearlo
     if (!customerCart) {
@@ -65,6 +71,26 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
       this.cart = customerCart ?? null;
       this.cartId = customerCart?.id ?? 0;
       console.log('Nuevo carrito creado:', this.cart);
+    }
+    // 2. Si NO existe, crear el myCart
+    if (!customerMyCart) {
+      this.myCart = {
+        customer_id: this.selectedCustomer.id,
+        store_id: 1, // Asignar un store_id por defecto o según tu lógica
+        order_status_id: null,
+        total_amount: 0,
+        profit_margin: 0,
+        discount_applied: 0,
+        final_amount: 0,
+        payment_method: null,
+        shipping_address: null,
+        notes: null,
+        details: [],
+      };
+      await this.myCartIDBService.saveMyCart([this.myCart]);
+      customerMyCart = await this.myCartIDBService.getByCustomerId(this.selectedCustomer.id);
+      this.myCart = customerMyCart ?? null;
+      console.log('Nuevo My Cart creado:', this.myCart);
     }
 
     // 3. Si existe, actualizar el customer en el cart
@@ -113,7 +139,7 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
     private productIDBService: ProductIndexedDBService,
     private cartIDBService: CartIndexedDBService,
     private cdr: ChangeDetectorRef,
-    private customerService: CustomerService
+    private myCartIDBService: MyCartIndexedDBService,
   ) { }
 
   productExists: boolean = true;
@@ -212,6 +238,10 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
       console.log('Carrito cargado:', this.cart);
       console.log('CART ID:', this.cartId);
 
+      // MY CART
+      this.myCart = await this.myCartIDBService.getLastMyCart() || null;
+      console.log('My Cart:', this.myCart);
+
       if (this.selectedCustomer?.id) {
         const customerCart = await this.cartIDBService.getByCustomerId(this.selectedCustomer.id);
         if (customerCart) {
@@ -305,9 +335,20 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
       quantity: this.quantity,
       linear_meter: this.height,
     }]
-
     this.cartIDBService.saveCartItem(this.cartItem[0], cart_id)
 
+    this.myCartDetail = {
+      product_id: this.productId,
+      height: this.height,
+      width: this.width,
+      quantity: this.quantity,
+      linear_meter: this.height,
+      subtotal: this.priceQuantity,
+      total_extra_options: 0, // Inicialmente 0, se actualizará al agregar opciones extra
+      extra_options: [],
+    }
+    console.log('My Cart Detail:', this.myCartDetail);
+    this.myCartIDBService.saveMyCartDetail(this.myCartDetail, this.myCart?.id ?? 0);
   }
 
   calculateExtraOptionPrice() {
@@ -374,7 +415,7 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
   }
 
   setCartExtraOptionGiga(id: number, quantity: number = 1, giga_select: string | null = null) {
-    const gigaForm = this.extraOptionGigaForm.value;
+
     if (id === 1) { // Termosellado
       this.cartExtraOptions.push({
         extra_option_id: id,

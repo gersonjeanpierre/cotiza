@@ -5,12 +5,12 @@ export interface Order {
   order_status_id: number;
   total_amount: number;
   profit_margin: number;
-  discount_applied?: number;
+  discount_applied: number | 0;
   final_amount: number;
   payment_method: string;
-  shipping_address?: string;
-  notes?: string;
-  details?: Details[];
+  shipping_address: string | null;
+  notes: string | null;
+  details: Details[];
 }
 
 export interface Details {
@@ -18,17 +18,52 @@ export interface Details {
   height: number;
   width: number;
   quantity: number;
-  linear_meter?: number | null;
-  extra_options?: DetailExtraOption[];
+  linear_meter: number;
+  subtotal: number;
+  total_extra_options: number;
+  extra_options: DetailExtraOption[];
 }
 
 export interface DetailExtraOption {
   extra_option_id: number;
-  quantity?: number;
-  linear_meter?: number | null;
-  width?: number | null;
+  quantity: number;
+  linear_meter: number | null;
+  width: number | null;
+  giga_select: string | null;
 }
 
+const okay = {
+  "customer_id": 0,
+  "store_id": 0,
+  "order_status_id": 0,
+  "total_amount": 1,
+  "profit_margin": 0,
+  "discount_applied": 0,
+  "final_amount": 1,
+  "payment_method": "string",
+  "shipping_address": "string",
+  "notes": "string",
+  "details": [
+    {
+      "product_id": 0,
+      "height": 1,
+      "width": 1,
+      "quantity": 1,
+      "linear_meter": 1,
+      "subtotal": 1,
+      "total_extra_options": 1,
+      "extra_options": [
+        {
+          "extra_option_id": 0,
+          "quantity": 1,
+          "linear_meter": 1,
+          "width": 1,
+          "giga_select": "string"
+        }
+      ]
+    }
+  ]
+}
 
 const order_example = {
   "customer_id": 1,

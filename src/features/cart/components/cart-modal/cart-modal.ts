@@ -1,7 +1,7 @@
 import { DecimalPipe } from '@angular/common';
 import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
-import { Cart, CartItem } from '@core/models/cart';
+import { Cart, CartItem, MyCart, MyCartDetail } from '@core/models/cart';
 import { Product } from '@core/models/product';
 import { DisplayCartIndexedDBService } from '@features/orders/service/display-cart-idb';
 import { CartIndexedDBService } from '@features/quotations/services/cart-idb';
@@ -17,6 +17,10 @@ import { getProductPrice, getPriceExtraOption, convertNumberToText } from '@shar
 export class CartModal implements OnInit {
 
   @ViewChild('cartDialog') dialog!: ElementRef<HTMLDialogElement>;
+
+
+  myCart: MyCart | null = null; // Carrito de compras del usuario
+  myCartDetail: MyCartDetail[] = []; // Detalles del carrito de compras
 
   cart: Cart | undefined = undefined;
   cartItems: CartItem[] | undefined = undefined;

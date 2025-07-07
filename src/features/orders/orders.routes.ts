@@ -1,5 +1,5 @@
 import { Route } from "@angular/router";
-import { Order } from "./components/order/order";
+import { OrderNew } from "./components/order/order";
 import { ListOrders } from "./components/list-orders/list-orders";
 import { Invoice } from "./components/invoice/invoice";
 
@@ -10,7 +10,7 @@ export const ORDERS_ROUTES: Route[] = [
   },
   {
     path: 'nuevo/:orderId',
-    component: Order
+    component: OrderNew
   },
   {
     path: 'invoice/:orderId',

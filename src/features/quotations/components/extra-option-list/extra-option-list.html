@@ -48,7 +48,7 @@
     </p>
   } @else {
     <p class="font-medium mb-3">
-      Precio Metro Lineal: {{ priceBase | currency: "S/." }}
+      Precio Metro Lineal: {{ priceBaseMarginIGV | currency: "S/." }}
     </p>
   }
   <form [formGroup]="dimensionsForm" (ngSubmit)="onSubmit()" class="flex gap-5">

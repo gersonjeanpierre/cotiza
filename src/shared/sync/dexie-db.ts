@@ -1,4 +1,4 @@
-import { Cart } from '@core/models/cart';
+import { Cart, MyCart } from '@core/models/cart';
 import { OrderStatus } from '@core/models/order-status';
 import { Product } from '@core/models/product';
 import { ProductType } from '@core/models/product-type';
@@ -12,6 +12,7 @@ export class CotizaDB extends Dexie {
   carts!: EntityTable<Cart, 'id'>;
   display_cart!: EntityTable<{ id: number }, 'id'>;
   order_statuses!: EntityTable<OrderStatus, 'id'>;
+  my_cart!: EntityTable<MyCart, 'id'>;
 
   constructor() {
     super('CotizaDB');
@@ -22,6 +23,7 @@ export class CotizaDB extends Dexie {
       carts: '++id, customer_id',
       display_cart: '++id',
       order_statuses: '++id, code',
+      my_cart: '++id, customer_id',
     });
   }
 }
