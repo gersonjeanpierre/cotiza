@@ -22,7 +22,7 @@ export const getProductPrice = (
     const area = Number((height * width).toFixed(2));
     productPriceFinal = getPriceGigaForTypeClient(typeClient, quantity) * area;
   } else if (productId >= 2 && productId <= 9) {
-    productPriceFinal = getPriceVinylForTypeClient(productId, typeClient, productPrice);
+    productPriceFinal = getPriceVinylForTypeClient(productId, typeClient, productPrice) * height;
   }
   return Number((profitMarginAndIgv * productPriceFinal).toFixed(2));
 }

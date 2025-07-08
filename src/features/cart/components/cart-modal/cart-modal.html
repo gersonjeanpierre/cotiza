@@ -14,42 +14,41 @@
         <thead>
           <tr>
             <th></th>
-            <th class="text-center">Codigo</th>
-            <th class="text-center">Nombre</th>
+            <th class="">Codigo</th>
+            <th class="">Nombre</th>
             <th class="text-center">Cantidad</th>
             <th class="text-center">P. Unit</th>
             <th class="text-right">Importe</th>
           </tr>
         </thead>
         <tbody>
-          @for (p of displayCart; track $index) {
+          @for (product of displayMyCart; track $index) {
             <tr>
               <th>{{ $index + 1 }}</th>
-              <td class="font-bold">{{ p.sku }}</td>
+              <td class="font-bold">{{ product.sku }}</td>
               <td class="font-bold">
-                {{ p.name }}
-                @if (p.product_id === 1) {
+                {{ product.name }}
+                @if (product.product_id === 1) {
                   <span class="text-gray-500 font-medium"
-                    >| Metro Cuadrado: {{ p.linear_meter * p.width }} m<sup
-                      >2</sup
-                    >
+                    >| Metro Cuadrado:
+                    {{ product.linear_meter * product.width }} m<sup>2</sup>
                   </span>
                 }
-                @if (p.product_id >= 2 && p.product_id <= 9) {
+                @if (product.product_id >= 2 && product.product_id <= 9) {
                   <span class="text-gray-500 font-medium"
-                    >| Metro Lineal: {{ p.linear_meter }} m</span
+                    >| Metro Lineal: {{ product.linear_meter }} m</span
                   >
                 }
               </td>
-              <td class="text-center">{{ p.quantity }}</td>
-              <td class="text-center">{{ p.price | number: "1.2-2" }}</td>
+              <td class="text-center">{{ product.quantity }}</td>
+              <td class="text-center">{{ product.price | number: "1.2-2" }}</td>
               <td class="text-right">
-                {{ p.quantity * p.price | number: "1.2-2" }}
+                {{ product.quantity * product.price | number: "1.2-2" }}
               </td>
               <td>
                 <button
                   class="btn btn-xs btn-error"
-                  (click)="deleteCartItem(p.product_id)"
+                  (click)="deleteCartItem(product.product_id)"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -66,9 +65,7 @@
               </td>
             </tr>
             <tr>
-              @if (
-                p.product_extra_options && p.product_extra_options.length > 0
-              ) {
+              @if (product.extra_options && product.extra_options.length > 0) {
                 <td></td>
                 <td></td>
                 <td
@@ -79,7 +76,7 @@
                 </td>
               }
             </tr>
-            @for (extra of p.product_extra_options; track $index) {
+            @for (extra of product.extra_options; track $index) {
               <tr>
                 <td></td>
                 <td></td>
@@ -127,7 +124,10 @@
             <tr>
               <td colspan="5" class="text-right font-bold">Subtotal (S/.):</td>
               <td class="font-bold text-right">
-                {{ p.subtotalProduct | number: "1.2-2" }}
+                {{
+                  product.subtotal + product.total_extra_options
+                    | number: "1.2-2"
+                }}
               </td>
             </tr>
           }
@@ -161,7 +161,7 @@
       <button
         class="btn btn-primary"
         (click)="proceedToPayment()"
-        [disabled]="!displayCart.length"
+        [disabled]="!displayMyCart.length"
       >
         Proceder al Pago
       </button>

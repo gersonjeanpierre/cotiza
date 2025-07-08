@@ -1,22 +1,21 @@
 import { Injectable } from "@angular/core";
 import { MyCart, MyCartDetail, MyCartDetailExtraOption } from "@core/models/cart";
+import { Customer } from "@core/models/customer";
 import { CotizaDB } from "@shared/sync/dexie-db";
 
 @Injectable({ providedIn: 'root' })
 export class MyCartIndexedDBService {
   private db = new CotizaDB();
 
-  async saveMyCart(myCarts: MyCart[]): Promise<void> {
-    for (const myCart of myCarts) {
-      // Busca si ya existe un myCart con ese customer_id
-      const existingMyCart = await this.db.my_cart.where('customer_id').equals(myCart.customer_id).first();
-      // Borra el myCart existente
-      if (existingMyCart) {
-        await this.db.my_cart.where('id').equals(existingMyCart.id ?? 0).delete();
-      }
-      // Agrega el nuevo myCart (irá al final con nuevo id autoincremental)
-      await this.db.my_cart.add(myCart);
+  async saveMyCart(myCart: MyCart): Promise<void> {
+    // Busca si ya existe un myCart con ese customer_id
+    const existingMyCart = await this.db.my_cart.where('customer_id').equals(myCart.customer_id).first();
+    // Borra el myCart existente
+    if (existingMyCart) {
+      await this.db.my_cart.where('id').equals(existingMyCart.id ?? 0).delete();
     }
+    // Agrega el nuevo myCart (irá al final con nuevo id autoincremental)
+    await this.db.my_cart.add(myCart);
   }
 
   async deleteMyCart(myCartId: number): Promise<void> {
@@ -109,14 +108,14 @@ export class MyCartIndexedDBService {
     await this.db.my_cart.put(myCart);
   }
 
-  async updateCustomerInMyCart(customerId: number): Promise<void> {
+  async updateCustomerInMyCart(customerId: number, customerData: Customer): Promise<void> {
     const myCart = await this.db.my_cart.where('customer_id').equals(customerId).first();
     if (!myCart) {
       throw new Error(`El MyCart con customer_id ${customerId} no fue encontrado`);
     }
-    // Actualiza el customer_id del myCart
-    myCart.customer_id = customerId;
+    myCart.customer = customerData;
     await this.db.my_cart.put(myCart);
+
   }
 
 

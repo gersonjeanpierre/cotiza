@@ -9,8 +9,6 @@ export class CotizaDB extends Dexie {
   type_clients!: EntityTable<TypeClient, 'id'>;
   products!: EntityTable<Product, 'id'>;
   product_type!: EntityTable<ProductType, 'id'>;
-  carts!: EntityTable<Cart, 'id'>;
-  display_cart!: EntityTable<{ id: number }, 'id'>;
   order_statuses!: EntityTable<OrderStatus, 'id'>;
   my_cart!: EntityTable<MyCart, 'id'>;
 
@@ -20,8 +18,6 @@ export class CotizaDB extends Dexie {
       type_clients: '++id,code',
       products: '++id, sku',
       product_type: '++id, name',
-      carts: '++id, customer_id',
-      display_cart: '++id',
       order_statuses: '++id, code',
       my_cart: '++id, customer_id',
     });

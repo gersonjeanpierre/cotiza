@@ -1,9 +1,8 @@
 import { CurrencyPipe } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { CartIndexedDBService } from '@features/quotations/services/cart-idb';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
-import { Cart } from '@core/models/cart';
+import { Cart, DisplayCartItem } from '@core/models/cart';
 import { Order } from '@core/models/order';
 
 @Component({
@@ -19,18 +18,17 @@ export class OrderNew {
   finalAmount: number = 0;
   cart: Cart | null = null;
 
-  displayCart: any[] = [];
+  displayMyCart: DisplayCartItem[] = [];
 
   order: Order | null = null;
 
   constructor(
-    private cartIDBService: CartIndexedDBService,
     private router: Router
   ) {
     const navigation = this.router.getCurrentNavigation();
     const state = navigation?.extras.state;
 
-    this.displayCart = state?.['displayCart'];
+    this.displayMyCart = state?.['displayMyCart'];
     this.totalAmount = state?.['totalAmount'] || 0;
     this.totalIgv = state?.['totalIgv'] || 0;
     this.finalAmount = state?.['finalAmount'] || 0;
