@@ -7,8 +7,8 @@ import { CurrencyPipe } from '@angular/common';
 import { calculateCeltexFoamPriceAndSheets, calculateLaborPrice, getPriceGigaForTypeClient, getPriceVinylForTypeClient } from '@shared/utils/extraOptionList';
 import { CustomerModal } from '@features/customer/components/customer-modal/customer-modal';
 import { Customer } from '@core/models/customer';
-import { CartItem, MyCart, MyCartDetail, MyCartDetailExtraOption, ProductExtraOption } from '@core/models/cart';
-import { Cart } from '@core/models/cart';
+import { MyCart, MyCartDetail, MyCartDetailExtraOption } from '@core/models/cart';
+
 import { getProductPrice } from '@shared/utils/priceDisplay';
 import { MyCartIndexedDBService } from '@features/cart/service/my-cart-idb';
 
@@ -24,11 +24,6 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
   @ViewChild('customerModalRef') customerModalComponent!: CustomerModal;
 
   selectedCustomer: Customer | null = null;
-
-  cart: Cart | null = null;
-  cartId: number = 0;
-  cartItem: CartItem[] = [];
-  cartExtraOptions: ProductExtraOption[] = [];
 
   myCart: MyCart | null = null; // Carrito de compras del usuario
   myCartId: number = 0; // ID del carrito de compras del usuario
@@ -54,7 +49,6 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
     console.log('Cliente seleccionado:', this.selectedCustomer);
 
     let customerMyCart = await this.myCartIDBService.getByCustomerId(this.selectedCustomer.id);
-
     // M Y   C A R T
     // 2. Si NO existe, crear el myCart
     if (!customerMyCart) {
@@ -87,7 +81,6 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
     }
   }
 
-
   // Método para refrescar la lista de clientes si algo cambia en el modal
   refreshCustomerList(): void {
     console.log('Refrescando la lista de clientes...');
@@ -115,6 +108,7 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
   isCalculating: boolean = false;
   nameProduct: string = '';
   priceBase: number = 0;
+  priceBaseVinil: number = 0;
   priceBaseMarginIGV: number = 0; // Precio del producto
   priceUnit: number = 0;
   priceQuantity: number = 0;
@@ -161,6 +155,9 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
     this.route.paramMap.subscribe(async params => {
       this.productId = Number(params.get('productId'));
       this.productTypeId = Number(params.get('productTypeId'));
+      const allProducts = await this.productIDBService.getAll();
+      this.priceBaseVinil = allProducts.find(product => product.id === this.productId)?.price ?? 0;
+
 
       //////// MY CART///////////////
       this.myCart = await this.myCartIDBService.getLastMyCart() || null;
@@ -173,7 +170,6 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
         ? 'final'
         : 'imprentero';
 
-      const allProducts = await this.productIDBService.getAll();
       this.productExists = allProducts.some(product => product.id === this.productId);
 
       this.productTypeExists = allProducts.map(
@@ -194,7 +190,8 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
       if (this.productId === 1) {
         this.priceBase = getPriceGigaForTypeClient(typeClient, 1) * (1.18) * (1 + (this.myCart?.customer?.type_client?.margin ?? 0));
       } else if (this.productId >= 2 && this.productId <= 9) {
-        this.priceBase = getPriceVinylForTypeClient(this.productId, typeClient, 1) * (1.18) * (1 + (this.myCart?.customer?.type_client?.margin ?? 0));
+
+        this.priceBase = getPriceVinylForTypeClient(this.productId, typeClient, this.priceBaseVinil) * (1.18) * (1 + (this.myCart?.customer?.type_client?.margin ?? 0));
       }
 
       const extraOptions = allProducts.find(product => product.id === this.productId)?.extra_options ?? [];
@@ -205,12 +202,13 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
 
       this.dimensionsForm.get('quantity')?.valueChanges.subscribe((qty: number | null) => {
         this.quantity = qty ?? 1;
+        const priceBase = allProducts.find(product => product.id === this.productId)?.price ?? 0;
         const typeClient = this.myCart?.customer?.type_client.name.includes('Final')
           ? 'final'
           : 'imprentero';
         this.priceBaseMarginIGV = getProductPrice(
           this.productId,
-          1,
+          priceBase,
           typeClient,
           this.quantity,
           this.height,
@@ -243,21 +241,32 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
       }
       this.area = parseFloat((this.width * this.height).toFixed(4));
       this.priceBase = getPriceGigaForTypeClient(typeClient, this.quantity) * (1.18) * (1 + (this.myCart?.customer?.type_client?.margin ?? 0));
+      this.priceBaseMarginIGV = Number(getProductPrice(
+        this.productId,
+        this.priceBase,
+        typeClient,
+        this.quantity,
+        this.height,
+        this.width,
+        this.myCart?.customer?.type_client?.margin ?? 0,
+        0.18 // IGV default value
+      ).toFixed(2));
+    } else if (this.productId >= 2 && this.productId <= 9) {
+      this.priceBaseMarginIGV = Number(getProductPrice(
+        this.productId,
+        this.priceBaseVinil,
+        typeClient,
+        this.quantity,
+        this.height,
+        this.width,
+        this.myCart?.customer?.type_client?.margin ?? 0,
+        0.18 // IGV default value
+      ).toFixed(2));
     }
-    this.priceBaseMarginIGV = Number(getProductPrice(
-      this.productId,
-      this.priceBase,
-      typeClient,
-      this.quantity,
-      this.height,
-      this.width,
-      this.myCart?.customer?.type_client?.margin ?? 0,
-      0.18 // IGV default value
-    ).toFixed(2));
 
     console.log('Precio Base con Margen e IGV:', this.priceBaseMarginIGV);
 
-    this.priceUnit = this.height * this.priceBaseMarginIGV
+    this.priceUnit = this.priceBaseMarginIGV
     this.priceQuantity = this.priceUnit * this.quantity;
     this.priceMeterSquare = this.priceBaseMarginIGV;
 
@@ -313,8 +322,8 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
 
       this.setCartExtraOptionVin(this.laminadoId ?? 0);
       this.setCartExtraOptionVin(this.celtexFoamId ?? 0);
-
-      if (this.cartId !== 0) {
+      console.log()
+      if (this.myCartId !== 0) {
         this.myCartIDBService.saveMyCartDetailExtraOptions(this.myCartDetailExtraOption ?? [], this.myCart?.id ?? 0, this.productId);
       } else {
         console.error('No se puede guardar opciones extra: el carrito aún no tiene un id válido.');

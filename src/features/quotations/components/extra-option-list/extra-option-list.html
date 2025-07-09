@@ -48,7 +48,7 @@
     </p>
   } @else {
     <p class="font-medium mb-3">
-      Precio Metro Lineal: {{ priceBaseMarginIGV | currency: "S/." }}
+      Precio Metro Lineal: {{ priceBase | currency: "S/." }}
     </p>
   }
   <form [formGroup]="dimensionsForm" (ngSubmit)="onSubmit()" class="flex gap-5">
@@ -135,7 +135,11 @@
       </div>
       <div class="flex flex-col gap-2">
         <h3 class="text-xl font-bold">Area</h3>
-        <p>Area: {{ area }} m<sup>2</sup></p>
+        @if (productId === 1) {
+          <p>Area: {{ area }} m<sup>2</sup></p>
+        } @else if (productId >= 2 && productId <= 9) {
+          <p>Metro Lineal: {{ height }} m</p>
+        }
       </div>
     </div>
     <div

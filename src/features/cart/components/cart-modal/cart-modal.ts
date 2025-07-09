@@ -1,7 +1,7 @@
 import { DecimalPipe } from '@angular/common';
 import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
-import { Cart, CartItem, DisplayCartItem, MyCart, MyCartDetail } from '@core/models/cart';
+import { DisplayCartItem, MyCart, MyCartDetail } from '@core/models/cart';
 import { Product } from '@core/models/product';
 import { MyCartIndexedDBService } from '@features/cart/service/my-cart-idb';
 import { ProductIndexedDBService } from '@features/quotations/services/products-idb';
@@ -20,8 +20,6 @@ export class CartModal implements OnInit {
   myCart: MyCart | null = null; // Carrito de compras del usuario
   myCartDetail: MyCartDetail[] = []; // Detalles del carrito de compras
 
-  cart: Cart | undefined = undefined;
-  cartItems: CartItem[] | undefined = undefined;
 
   allProducts: Product[] = [];
   displayCart: any[] = [];
@@ -150,7 +148,7 @@ export class CartModal implements OnInit {
     this.dialog.nativeElement.close();
     this.router.navigate([`/dashboard/pedidos/nuevo/${this.myCart?.id}`], {
       state: {
-        cart: this.myCart,
+        myCart: this.myCart,
         displayMyCart: this.displayMyCart,
         totalAmount: this.totalAmount,
         totalIgv: this.totalIgv,

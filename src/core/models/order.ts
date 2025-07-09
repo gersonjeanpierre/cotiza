@@ -1,3 +1,7 @@
+import { Customer } from "@core/models/customer";
+import { OrderStatus } from "@core/models/order-status";
+import { Store } from "@core/models/store";
+
 export interface Order {
   id?: number;
   customer_id: number;
@@ -11,6 +15,10 @@ export interface Order {
   shipping_address: string | null;
   notes: string | null;
   details: Details[];
+  created_at?: Date;
+  status?: OrderStatus; // Es un objeto de OrderStatuses
+  customer?: Customer; // Es un objeto de Customers
+  store?: Store // Es un objeto de Store
 }
 
 export interface Details {
