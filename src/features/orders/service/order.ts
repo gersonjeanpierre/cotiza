@@ -28,12 +28,10 @@ export class OrderService {
   }
 
   generateOrderPdf(orderId: number, items: DisplayCartItem[]): Observable<Blob> {
-    const requestBody = { items: items };
-
-    // Envía la solicitud POST y espera una respuesta de tipo 'blob'
-    return this.http.post(`${this.apiUrl}/orders/${orderId}/generate-pdf`, requestBody, {
-      headers: { 'Content-Type': 'application/json' },
-      responseType: 'blob' // Importante para recibir el PDF como un blob
+    return this.http.post(`${this.apiUrl}/${orderId}/generate-pdf`, items, {
+      responseType: 'blob'
     });
   }
+
+
 }

@@ -192,6 +192,7 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
       } else if (this.productId >= 2 && this.productId <= 9) {
 
         this.priceBase = getPriceVinylForTypeClient(this.productId, typeClient, this.priceBaseVinil) * (1.18) * (1 + (this.myCart?.customer?.type_client?.margin ?? 0));
+        // console.log('Precio Base Vinil:', this.priceBase);
       }
 
       const extraOptions = allProducts.find(product => product.id === this.productId)?.extra_options ?? [];

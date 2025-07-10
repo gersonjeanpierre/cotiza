@@ -1,4 +1,78 @@
 import { calculateFramePrice, calculateLaborPrice, calculateTermoselladoPrice, getPriceGigaForTypeClient, getPriceVinylForTypeClient } from "./extraOptionList";
+import { DisplayCartItem, MyCart } from '@core/models/cart';
+import { Product } from '@core/models/product';
+import { Order } from "@core/models/order";
+
+export function convertMyCartToDisplayCartItems(
+  myCart: MyCart | Order,
+  allProducts: Product[],
+  igv: number = 0.18
+): DisplayCartItem[] {
+  if (!myCart?.details) return [];
+
+  const typeClient = myCart.customer?.type_client.name.includes('Final')
+    ? 'final'
+    : 'imprentero';
+  const profitMargin = myCart.customer?.type_client?.margin ?? 0;
+
+  return myCart.details.map((detail) => {
+    const product = allProducts.find(p => p.id === detail.product_id);
+
+    const extraOptions = detail.extra_options.map((extra) => {
+      const extraOption = product?.extra_options.find(opt => opt.id === extra.extra_option_id);
+      return {
+        ...extra,
+        name: extraOption?.name ?? '',
+        price: Number(getPriceExtraOption(
+          extraOption?.id ?? 0,
+          detail.linear_meter,
+          detail.width,
+          extra.linear_meter,
+          extra.width,
+          extraOption?.price ?? 0,
+          extra.giga_select,
+          profitMargin,
+          igv
+        ).toFixed(2))
+      };
+    });
+
+    const subtotalExtraOnly = Number(extraOptions.reduce(
+      (sum, extra) => sum + ((extra.price) * (extra.quantity || 1) || 0),
+      0
+    ).toFixed(2));
+
+    const subtotalProductOnly = Number(getProductPrice(
+      product?.id ?? 0,
+      product?.price ?? 0,
+      typeClient,
+      detail.quantity,
+      detail.height,
+      detail.width,
+      profitMargin,
+      igv
+    ).toFixed(2)) * (detail.quantity);
+
+    return {
+      ...detail,
+      sku: product?.sku ?? '',
+      name: product?.name ?? '',
+      price: Number(getProductPrice(
+        product?.id ?? 0,
+        product?.price ?? 0,
+        typeClient,
+        detail.quantity,
+        detail.height,
+        detail.width,
+        profitMargin,
+        igv
+      ).toFixed(2)),
+      image: product?.image_url ?? '',
+      total_extra_options: subtotalExtraOnly,
+      extra_options: extraOptions,
+    } as DisplayCartItem;
+  });
+}
 
 export const getProductPrice = (
   productId: number,
