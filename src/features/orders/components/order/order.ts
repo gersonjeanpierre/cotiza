@@ -72,8 +72,7 @@ export class OrderNew {
 
 
   ngOnInit() {
-    this.profitMargin = Number((this.totalAmount * (this.myCart?.customer?.type_client.margin || 0)).toFixed(2));
-    console.log('Profit Margin:', this.profitMargin);
+    console.log('Display My Cart:', this.displayMyCart);
   }
 
   saveOrder() {
@@ -100,8 +99,8 @@ export class OrderNew {
           extra_option_id: extra.extra_option_id || 0,
           quantity: extra.quantity || 1,
           linear_meter: extra.linear_meter || 1,
-          width: extra.width || 1,
-          giga_select: extra.giga_select || null
+          width: extra.width,
+          giga_select: extra.giga_select
         })) || []
       })) || []
     };
@@ -109,49 +108,20 @@ export class OrderNew {
       this.orderPayloadForm.markAllAsTouched();
     }
 
-    this.orderService.createOrder(orderPayload).subscribe({
+
+    console.log('Display My Cart:', this.displayMyCart);
+    this.order = orderPayload;
+
+    this.orderService.createOrder(this.order).subscribe({
       next: (response) => {
         console.log('Order created successfully:', response);
-        this.myCartIBDService.deleteMyCart(this.myCart?.id || 0)
+        this.myCartIBDService.deleteMyCart(this.myCart?.id || 0);
         this.router.navigate(['/dashboard/pedidos']);
       },
       error: (error) => {
         console.error('Error creating order:', error);
       }
     });
-
-    this.order = orderPayload;
-    console.log('Order  this:', this.order);
   }
 
-}
-
-const a = {
-  "customer_id": 0,
-  "store_id": 0, //  igual a 1
-  "order_status_id": 0,
-  "total_amount": 1,
-  "profit_margin": 0,
-  "discount_applied": 0,
-  "final_amount": 1,
-  "payment_method": "string",
-  "shipping_address": "string",
-  "notes": "string",
-  "details": [
-    {
-      "product_id": 0,
-      "height": 1,
-      "width": 1,
-      "quantity": 1,
-      "linear_meter": 1,
-      "extra_options": [
-        {
-          "extra_option_id": 0,
-          "quantity": 1,
-          "linear_meter": 1,
-          "width": 1
-        }
-      ]
-    }
-  ]
 }

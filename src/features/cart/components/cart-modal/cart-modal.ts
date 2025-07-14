@@ -5,7 +5,7 @@ import { DisplayCartItem, MyCart, MyCartDetail } from '@core/models/cart';
 import { Product } from '@core/models/product';
 import { MyCartIndexedDBService } from '@features/cart/service/my-cart-idb';
 import { ProductIndexedDBService } from '@features/quotations/services/products-idb';
-import { getProductPrice, getPriceExtraOption, convertNumberToText, convertMyCartToDisplayCartItems } from '@shared/utils/priceDisplay';
+import { convertNumberToText, convertMyCartToDisplayCartItems } from '@shared/utils/priceDisplay';
 
 @Component({
   selector: 'app-cart-modal',
@@ -30,6 +30,7 @@ export class CartModal implements OnInit {
   profitMargin: number = 0; // Margen de ganancia 
   finalAmount: number = 0; // Monto final del carrito
   totalToText: string = ''; // Total en texto
+
 
 
   igv: number = 0.18; // Porcentaje del IGV (18%)
@@ -72,12 +73,6 @@ export class CartModal implements OnInit {
   getTotalCart(): number {
     return this.displayMyCart.reduce((total, item) => total + ((item.subtotal || 0) + (item.total_extra_options || 0)), 0);
   }
-
-  // async deleteExtraOption(productId: number, extraOptionId: number) {
-  //   if (!this.cart?.id) return;
-  //   await this.myCartIDBService.del(this.cart.id, productId, extraOptionId);
-  //   await this.loadCart(); // Recarga el carrito para reflejar los cambios
-  // }
 
   async deleteCartItem(productId: number): Promise<void> {
     if (!this.myCart?.id) return;

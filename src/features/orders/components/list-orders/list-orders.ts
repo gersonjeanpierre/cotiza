@@ -1,4 +1,5 @@
 import { AsyncPipe, CurrencyPipe, DatePipe } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectorRef, Component, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Order } from '@core/models/order';
@@ -7,7 +8,7 @@ import { OrderService } from '@features/orders/service/order';
 import { OrderIndexedDBService } from '@features/orders/service/order-idb';
 import { ProductIndexedDBService } from '@features/quotations/services/products-idb';
 import { convertMyCartToDisplayCartItems } from '@shared/utils/priceDisplay';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, catchError, throwError } from 'rxjs';
 
 @Component({
   selector: 'app-list-orders',
@@ -85,13 +86,15 @@ export class ListOrders {
         this.loading.set(false);
       },
       error: (error) => {
+        catchError((error: HttpErrorResponse) => {
+          console.error('PDF generation failed:', error.error); // Add this for insights
+          return throwError(() => error);
+        });
         console.error('Error al generar el PDF:', error);
         this.errorMessage.set('Error al generar el PDF. Por favor, inténtelo de nuevo más tarde.');
         this.loading.set(false);
       }
     });
-
-
   }
 
   private downloadPdf(pdfBlob: Blob, orderId: number): void {
@@ -106,6 +109,14 @@ export class ListOrders {
     document.body.removeChild(link);
     window.URL.revokeObjectURL(url);
   }
+
+  getDateInUTC5(dateInput?: string | Date): Date {
+    if (!dateInput) return new Date(0);
+    const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
+    // Ajusta a UTC-5
+    return new Date(date.getTime() - (date.getTimezoneOffset() * 60000) - (5 * 60 * 60000));
+  }
+
 
 
 }

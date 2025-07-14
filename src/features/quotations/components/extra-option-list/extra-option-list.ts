@@ -46,6 +46,7 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
   // Método que se ejecuta cuando el modal emite un cliente seleccionado
   async onCustomerSelected(customer: Customer): Promise<void> {
     this.selectedCustomer = customer;
+
     console.log('Cliente seleccionado:', this.selectedCustomer);
 
     let customerMyCart = await this.myCartIDBService.getByCustomerId(this.selectedCustomer.id);
@@ -67,6 +68,9 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
         details: [],
       };
       await this.myCartIDBService.saveMyCart(this.myCart);
+      this.myCart = await this.myCartIDBService.getByCustomerId(this.selectedCustomer.id) ?? null;
+      this.myCartId = this.myCart?.id ?? 0;
+      console.log('Nuevo My Cart creado:', this.myCart);
     }
     if (customerMyCart) {
       await this.myCartIDBService.updateCustomerInMyCart(this.selectedCustomer.id, customer);
@@ -77,8 +81,11 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
         await this.myCartIDBService.saveMyCart(customerMyCart!);
       }
       this.myCart = await this.myCartIDBService.getByCustomerId(this.selectedCustomer.id!) ?? null;
+      this.myCartId = this.myCart?.id ?? 0;
       this.cdr.detectChanges();
     }
+    this.updatePriceBase(customer);
+    this.cdr.detectChanges();
   }
 
   // Método para refrescar la lista de clientes si algo cambia en el modal
@@ -157,7 +164,7 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
       this.productTypeId = Number(params.get('productTypeId'));
       const allProducts = await this.productIDBService.getAll();
       this.priceBaseVinil = allProducts.find(product => product.id === this.productId)?.price ?? 0;
-
+      console.log('precio base vinil:', this.priceBaseVinil);
 
       //////// MY CART///////////////
       this.myCart = await this.myCartIDBService.getLastMyCart() || null;
@@ -400,6 +407,17 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
         width: extraform.width ?? null,
         giga_select: null,
       });
+    }
+  }
+
+  updatePriceBase(customer: Customer | null = null) {
+    const type_client = customer?.type_client.name.includes('Final')
+      ? 'final'
+      : 'imprentero';
+    if (this.productId === 1) {
+      this.priceBase = getPriceGigaForTypeClient(type_client, 1) * (1.18) * (1 + (customer?.type_client?.margin ?? 0));
+    } else if (this.productId >= 2 && this.productId <= 9) {
+      this.priceBase = getPriceVinylForTypeClient(this.productId, type_client, this.priceBaseVinil) * (1.18) * (1 + (customer?.type_client?.margin ?? 0));
     }
   }
 

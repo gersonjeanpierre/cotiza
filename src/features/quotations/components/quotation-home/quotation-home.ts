@@ -18,10 +18,9 @@ import { OrderStatusesIndexedDBService } from '@features/orders/service/order-st
   selector: 'app-quotation-home',
   imports: [],
   templateUrl: './quotation-home.html',
-  styleUrl: './quotation-home.css'
 })
 export class QuotationHome implements OnInit {
-  title = 'Quotation Home';
+  title = 'Modulo de Cotizaciones';
   constructor(
     private router: Router,
     private productTypeService: ProductTypeService,

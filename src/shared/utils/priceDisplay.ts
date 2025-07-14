@@ -33,7 +33,7 @@ export function convertMyCartToDisplayCartItems(
           extra.giga_select,
           profitMargin,
           igv
-        ).toFixed(2))
+        ).toFixed(2)),
       };
     });
 
@@ -41,17 +41,6 @@ export function convertMyCartToDisplayCartItems(
       (sum, extra) => sum + ((extra.price) * (extra.quantity || 1) || 0),
       0
     ).toFixed(2));
-
-    const subtotalProductOnly = Number(getProductPrice(
-      product?.id ?? 0,
-      product?.price ?? 0,
-      typeClient,
-      detail.quantity,
-      detail.height,
-      detail.width,
-      profitMargin,
-      igv
-    ).toFixed(2)) * (detail.quantity);
 
     return {
       ...detail,

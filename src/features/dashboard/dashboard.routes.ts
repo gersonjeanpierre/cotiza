@@ -9,7 +9,7 @@ export const dashboardRoutes: Routes = [
     component: DashboardLayout,
     children: [
       {
-        path: '', redirectTo: 'overview', pathMatch: 'full'
+        path: '', redirectTo: 'cotizaciones', pathMatch: 'full'
       },
       {
         path: 'overview', component: DashboardPage
