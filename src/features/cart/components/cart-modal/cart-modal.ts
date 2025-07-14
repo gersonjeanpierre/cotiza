@@ -5,7 +5,7 @@ import { DisplayCartItem, MyCart, MyCartDetail } from '@core/models/cart';
 import { Product } from '@core/models/product';
 import { MyCartIndexedDBService } from '@features/cart/service/my-cart-idb';
 import { ProductIndexedDBService } from '@features/quotations/services/products-idb';
-import { convertNumberToText, convertMyCartToDisplayCartItems } from '@shared/utils/priceDisplay';
+import { convertNumberToText, adaptOrderToMyCart } from '@shared/utils/priceDisplay';
 
 @Component({
   selector: 'app-cart-modal',
@@ -56,7 +56,7 @@ export class CartModal implements OnInit {
     this.myCart = await this.myCartIDBService.getLastMyCart() || null;
     this.allProducts = await this.productIDBService.getAll();
 
-    this.displayMyCart = convertMyCartToDisplayCartItems(
+    this.displayMyCart = adaptOrderToMyCart(
       this.myCart!,
       this.allProducts,
       this.igv

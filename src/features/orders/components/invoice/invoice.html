@@ -1,119 +1,323 @@
 <div class="p-8">
-  <div
-    class="max-w-4xl mx-auto bg-white border border-gray-200 shadow-sm rounded-lg p-6"
-  >
-    <div class="flex justify-between items-center mb-6">
-      <div>Hola</div>
+  <!-- Indicador de carga -->
+  @if (loading()) {
+  <div class="flex justify-center items-center py-8">
+    <span class="loading loading-spinner loading-lg"></span>
+    <span class="ml-2">Cargando factura...</span>
+  </div>
+  }
+
+  @if (!loading() && order()) {
+  <div class="max-w-4xl mx-auto bg-white border border-gray-200 shadow-sm rounded-lg p-6">
+
+    <!-- Header con logo y botones de acción -->
+    <div class="flex justify-between items-start mb-6">
+      <div class="flex gap-2">
+        <button (click)="goBackToOrders()" class="btn btn-outline btn-sm">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
+            <path fill="currentColor"
+              d="m7.825 13l4.9 4.9q.3.3.288.7t-.313.7q-.3.275-.7.288t-.7-.288l-6.6-6.6q-.15-.15-.213-.325T4.425 12t.063-.375t.212-.325l6.6-6.6q.275-.275.688-.275t.712.275q.3.3.3.713t-.3.712L7.825 11H19q.425 0 .713.288T20 12t-.288.713T19 13z" />
+          </svg>
+          Volver
+        </button>
+
+        <button (click)="toggleEdit()" class="btn btn-primary btn-sm" [disabled]="saving()">
+          @if (!isEditing()) {
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
+            <path fill="currentColor"
+              d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75zM20.71 7.04a.996.996 0 0 0 0-1.41l-2.34-2.34a.996.996 0 0 0-1.41 0l-1.83 1.83l3.75 3.75z" />
+          </svg>
+          Editar
+          } @else {
+          Cancelar
+          }
+        </button>
+
+        @if (isEditing()) {
+        <button (click)="saveChanges()" class="btn btn-success btn-sm" [disabled]="saving() || editForm.invalid">
+          @if (saving()) {
+          <span class="loading loading-spinner loading-xs"></span>
+          } @else {
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
+            <path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19L21 7l-1.41-1.41z" />
+          </svg>
+          }
+          Guardar
+        </button>
+        }
+      </div>
+
+      <!-- Logo -->
       <div class="flex flex-col justify-center items-center">
         <div class="laser">
           <span>LASER</span>
           <span class="laser-color">COLOR</span>
           <span class="laser-veloz">VELOZ</span>
         </div>
-
         <span class="text-gray-600 text-sm">
           EDITORIAL GLOBAL MULTIPRINT E.I.R.L.
         </span>
       </div>
     </div>
+
+    <!-- Mensajes de estado -->
+    @if (errorMessage()) {
+    <div class="alert alert-error mb-4">
+      {{ errorMessage() }}
+    </div>
+    }
+
+    @if (successMessage()) {
+    <div class="alert alert-success mb-4">
+      {{ successMessage() }}
+    </div>
+    }
+
+    <!-- Información del pedido -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6 p-4 bg-gray-50 rounded-lg">
+      <div>
+        <p class="text-sm text-gray-500">ID del Pedido</p>
+        <p class="text-lg font-bold">#{{ order()!.id }}</p>
+      </div>
+      <div>
+        <p class="text-sm text-gray-500">Fecha de Creación</p>
+        <p class="text-lg font-semibold">
+          {{ order()!.created_at | date: "dd/MM/yyyy hh:mm a" }}
+        </p>
+      </div>
+      <div>
+        <p class="text-sm text-gray-500">Estado</p>
+        <span class="badge {{getColorStatus(order()!.order_status_id)}} badge-lg">
+          {{ getStatusName(order()!.order_status_id || 1) }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Información del cliente -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-4">
       <div>
         <p class="text-gray-700 mb-2">
           <strong class="font-extrabold">Nombre:</strong>
-          {{ order?.customer?.name + "" + order?.customer?.last_name }}
+          @if (order()!.customer?.entity_type === 'N') {
+          {{ order()!.customer?.name + " " + order()!.customer?.last_name }}
+          } @else {
+          {{ order()!.customer?.business_name }}
+          }
         </p>
         <p class="text-gray-700">
-          <strong class="font-extrabold">DNI:</strong>
-          {{ order?.customer?.dni }}
+          <strong class="font-extrabold">
+            {{ order()!.customer?.entity_type === 'N' ? 'DNI:' : 'RUC:' }}
+          </strong>
+          {{ order()!.customer?.entity_type === 'N' ? order()!.customer?.dni : order()!.customer?.ruc }}
         </p>
       </div>
       <div>
         <p class="text-gray-700 mb-2">
           <strong class="font-extrabold">Celular:</strong>
-          {{ order?.customer?.phone_number }}
+          {{ order()!.customer?.phone_number }}
         </p>
         <p class="text-gray-700">
           <strong class="font-extrabold">Correo:</strong>
-          {{ order?.customer?.email }}
+          {{ order()!.customer?.email }}
         </p>
       </div>
-    </div>
-    <div class="flex flex-col mb-4">
-      <p>De nuestra mayor consideracion.</p>
-      <div class="flex justify-end">
-        <p class="">
-          Es grato dirigirnos a Uds. a fin de hacerle llegar nuestra propuesta
-          economica por lo siguiente:
-        </p>
-      </div>
-    </div>
-    <div class="mb-4">
-      <div class="border-b-2 border-gray-300 my-6"></div>
-      <h2 class="text-xl font-extrabold text-gray-900 mb-2">
-        FACTURA PROFORMA
-      </h2>
     </div>
 
+    <!-- Información del pedido editable -->
+    <form [formGroup]="editForm" class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+      <div>
+        <label class="label">
+          <span class="label-text font-semibold">Método de Pago:</span>
+        </label>
+        @if (!isEditing()) {
+        <p class="text-lg">{{ order()!.payment_method }}</p>
+        } @else {
+        <select formControlName="payment_method" class="select select-bordered w-full">
+          <option value="EFECTIVO">Efectivo</option>
+          <option value="YAPE">YAPE</option>
+          <option value="TRANSFERENCIA BANCARIA">Transferencia Bancaria</option>
+          <option value="TARJETA DEBITO">Tarjeta de Débito</option>
+          <option value="TARJETA CREDITO">Tarjeta de Crédito</option>
+        </select>
+        }
+      </div>
+
+      <div class="md:col-span-2">
+        <label class="label">
+          <span class="label-text font-semibold">Estado:</span>
+        </label>
+        @if (!isEditing()) {
+        <span class="badge {{getColorStatus(order()!.order_status_id)}} badge-lg ml-3">
+          {{ getStatusName(order()!.order_status_id || 1) }}
+        </span>
+        } @else {
+        <select formControlName="order_status_id" class="select select-bordered select-sm w-1/4">
+          @for (status of orderStatuses; track status.id) {
+          <option [value]="status.id">{{ status.name }}</option>
+          }
+        </select>
+        }
+      </div>
+      <div class="md:col-span-2">
+        <label class="label">
+          <span class="label-text font-semibold">Notas:</span>
+        </label>
+        @if (!isEditing()) {
+        <p class="text-lg p-3 bg-gray-50 rounded border min-h-[60px]">
+          {{ order()!.notes || 'Sin notas adicionales' }}
+        </p>
+        } @else {
+        <textarea formControlName="notes" class="textarea textarea-bordered w-full h-20"
+          placeholder="Agregar notas sobre el pedido..."></textarea>
+        }
+      </div>
+    </form>
+
+    <!-- Separador -->
+    <div class="border-b-2 border-gray-300 my-6"></div>
+
+    <!-- Título de factura -->
+    <h2 class="text-xl font-extrabold text-gray-900 mb-6 text-center">
+      FACTURA PROFORMA #{{ order()!.id }}
+    </h2>
+
+    <!-- Tabla de productos -->
     <div class="overflow-x-auto mb-10">
       <table class="min-w-full bg-white border border-gray-200 rounded-lg">
         <thead class="bg-gray-800 text-white">
           <tr>
-            <th
-              class="py-3 px-4 text-left text-sm font-medium uppercase tracking-wider"
-            >
+            <th class="py-3 px-4 text-left text-sm font-medium uppercase tracking-wider">
               Producto
             </th>
-            <th
-              class="py-3 px-4 text-left text-sm font-medium uppercase tracking-wider"
-            >
+            <th class="py-3 px-4 text-center text-sm font-medium uppercase tracking-wider">
               Cantidad
             </th>
-            <th
-              class="py-3 px-4 text-left text-sm font-medium uppercase tracking-wider"
-            >
+            <th class="py-3 px-4 text-left text-sm font-medium uppercase tracking-wider">
               Opciones Extras
             </th>
-            <th
-              class="py-3 px-4 text-right text-sm font-medium uppercase tracking-wider"
-            >
-              Precio Total (S/)
+            <th class="py-3 px-4 text-right text-sm font-medium uppercase tracking-wider">
+              Subtotal (S/)
             </th>
           </tr>
         </thead>
-        <tbody></tbody>
+        <tbody>
+          @for (detail of displayDetails(); track $index) {
+          <tr class="border-b border-gray-200">
+            <td class="py-4 px-4">
+              <div class="font-semibold">Producto #{{ $index + 1 }}</div>
+              <div class="font-semibold">{{ detail.name }}</div>
+              <div class="text-sm text-gray-500">
+                Dimensiones: {{ detail.height }}m x {{ detail.width }}m
+              </div>
+              @if (detail.product_id === 1) {
+              <div class="text-sm text-gray-500">
+                Metro Cuadrado: {{ detail.height * detail.width | number: "1.2-2" }} m²
+              </div>
+              } @else {
+              <div class="text-sm text-gray-500">
+                Metro Lineal: {{ detail.linear_meter }} m
+              </div>
+              }
+            </td>
+            <td class="py-4 px-4 text-center font-semibold">
+              {{ detail.quantity }}
+            </td>
+            <td class="py-4 px-4">
+              @if (detail.extra_options && detail.extra_options.length > 0) {
+              @for (extra of detail.extra_options; track extra.extra_option_id) {
+              <div class="text-sm mb-1">
+                • {{ extra.name }}
+                @if (extra.giga_select) {
+                <span class="text-gray-600">({{ extra.giga_select }})</span>
+                }
+                - Cant: {{ extra.quantity }}
+              </div>
+              }
+              } @else {
+              <span class="text-gray-500 italic">Sin opciones extras</span>
+              }
+            </td>
+            <td class="py-4 px-4 text-right font-semibold">
+              {{ (detail.subtotal + detail.total_extra_options) | currency: "S/. " }}
+            </td>
+          </tr>
+          }
+        </tbody>
         <tfoot>
-          <tr class="bg-gray-50 border-t border-gray-300">
-            <th
-              colspan="3"
-              class="py-4 px-4 text-right text-xl font-bold text-gray-900"
-            >
+          <tr class="bg-gray-50 border-t-2 border-gray-300">
+            <td colspan="3" class="py-4 px-4 text-right text-lg font-semibold">
+              Subtotal (Gravado):
+            </td>
+            <td class="py-4 px-4 text-right text-lg font-bold">
+              {{ order()!.total_amount | currency: "S/. " }}
+            </td>
+          </tr>
+          <tr class="bg-gray-50">
+            <td colspan="3" class="py-2 px-4 text-right text-lg font-semibold">
+              IGV (18%):
+            </td>
+            <td class="py-2 px-4 text-right text-lg font-bold">
+              {{ (order()!.final_amount - order()!.total_amount) | currency: "S/. " }}
+            </td>
+          </tr>
+          @if (order()!.discount_applied > 0) {
+          <tr class="bg-gray-50">
+            <td colspan="3" class="py-2 px-4 text-right text-lg font-semibold text-red-600">
+              Descuento:
+            </td>
+            <td class="py-2 px-4 text-right text-lg font-bold text-red-600">
+              -{{ order()!.discount_applied | currency: "S/. " }}
+            </td>
+          </tr>
+          }
+          <tr class="bg-gray-800 text-white">
+            <td colspan="3" class="py-4 px-4 text-right text-xl font-bold">
               Total General:
-            </th>
-            <th
-              class="py-4 px-4 text-right text-2xl font-extrabold text-blue-700"
-            >
-              S/ {{ order?.final_amount }}
-            </th>
+            </td>
+            <td class="py-4 px-4 text-right text-2xl font-extrabold">
+              {{ order()!.final_amount | currency: "S/. " }}
+            </td>
           </tr>
         </tfoot>
       </table>
     </div>
-    <div>
-      <p>- Adelanto del 50%, con provia aprobacion de la muestra.</p>
-      <p>- El delivery no esta considerado en la cotizacion.</p>
+
+    <!-- Términos y condiciones -->
+    <div class="mb-8">
+      <h3 class="font-semibold mb-2">Términos y Condiciones:</h3>
+      <ul class="text-sm text-gray-700 space-y-1">
+        <li>• Adelanto del 50%, con previa aprobación de la muestra.</li>
+        <li>• El delivery no está considerado en la cotización.</li>
+        <li>• Los precios incluyen IGV.</li>
+        <li>• Validez de la oferta: 7 días.</li>
+      </ul>
     </div>
 
-    <div class="text-center text-gray-600 text-sm mt-12">
-      <p>
-        Gracias por su preferencia. Para cualquier consulta, no dude en
-        contactarnos.
+    <!-- Footer con información de contacto -->
+    <div class="text-center text-gray-600 text-sm mt-12 border-t pt-6">
+      <p class="mb-2">
+        Gracias por su preferencia. Para cualquier consulta, no dude en contactarnos.
+      </p>
+      <p class="mb-2 font-semibold">
+        www.lasercolorveloz.com | laser.guizado.plaza&#64;gmail.com
       </p>
       <p class="mb-2">
-        www.lasercolorveloz.com | laser.guizado.plaza&#64;gmail.com | 995 558
-        329 | 958 863 047 | 745 9011
+        📱 995 558 329 | 958 863 047 | ☎️ 745 9011
       </p>
-      <p>C.C Guizado Record Plaza 1er Piso Stand 102A - 194</p>
-      <p>Jr. Huaraz 1717 Altura Cdra. 9 Av. Brasil, Breña</p>
+      <p>
+        📍 C.C Guizado Record Plaza 1er Piso Stand 102A - 194<br>
+        Jr. Huaraz 1717 Altura Cdra. 9 Av. Brasil, Breña
+      </p>
     </div>
   </div>
+  }
+
+  @if (!loading() && !order) {
+  <div class="text-center py-12">
+    <div class="text-gray-500 text-lg">Pedido no encontrado</div>
+    <button (click)="goBackToOrders()" class="btn btn-primary mt-4">
+      Volver a Pedidos
+    </button>
+  </div>
+  }
 </div>

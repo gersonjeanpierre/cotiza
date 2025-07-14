@@ -3,7 +3,7 @@ import { DisplayCartItem, MyCart } from '@core/models/cart';
 import { Product } from '@core/models/product';
 import { Order } from "@core/models/order";
 
-export function convertMyCartToDisplayCartItems(
+export function adaptOrderToMyCart(
   myCart: MyCart | Order,
   allProducts: Product[],
   igv: number = 0.18

@@ -24,7 +24,7 @@ export class OrderService {
     return this.http.post<Order>(this.apiUrl, order);
   }
   updateOrder(id: number, order: Partial<Order>): Observable<Order> {
-    return this.http.put<Order>(`${this.apiUrl}/${id}`, order);
+    return this.http.patch<Order>(`${this.apiUrl}/${id}/status`, order);
   }
 
   generateOrderPdf(orderId: number, items: DisplayCartItem[]): Observable<Blob> {

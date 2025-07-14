@@ -84,7 +84,7 @@ export class OrderNew {
       profit_margin: this.profitMargin,
       discount_applied: this.orderPayloadForm.value.discount_applied || 0,
       final_amount: this.finalAmount,
-      payment_method: this.orderPayloadForm.value.payment_method || 'TRASFERENCIA BANCARIA',
+      payment_method: this.orderPayloadForm.value.payment_method || 'No especificado',
       shipping_address: this.orderPayloadForm.value.shipping_address || 'No especificado',
       notes: this.orderPayloadForm.value.notes || 'No especificado',
       details: this.displayMyCart?.map(product => ({
