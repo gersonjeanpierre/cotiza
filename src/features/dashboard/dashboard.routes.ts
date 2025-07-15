@@ -9,7 +9,7 @@ export const dashboardRoutes: Routes = [
     component: DashboardLayout,
     children: [
       {
-        path: '', redirectTo: 'overview', pathMatch: 'full'
+        path: '', redirectTo: 'cotizaciones', pathMatch: 'full'
       },
       {
         path: 'overview', component: DashboardPage
@@ -17,6 +17,10 @@ export const dashboardRoutes: Routes = [
       {
         path: 'cotizaciones',
         loadChildren: () => import('../quotations/quotations.routes')
+      },
+      {
+        path: 'pedidos',
+        loadChildren: () => import('../orders/orders.routes')
       },
     ]
   },

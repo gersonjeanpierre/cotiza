@@ -1,0 +1,40 @@
+<div>
+  <div class="stats stats-vertical lg:stats-horizontal shadow-2xl">
+    <div class="stat">
+      <div class="stat-title text-2xl">Gravado</div>
+      <div class="stat-value">{{ totalAmount | currency: "S/." }}</div>
+    </div>
+
+    <div class="stat">
+      <div class="stat-title text-2xl">IGV (18%)</div>
+      <div class="stat-value">{{ totalIgv | currency: "S/." }}</div>
+    </div>
+
+    <div class="stat">
+      <div class="stat-title text-2xl">Monto Total</div>
+      <div class="stat-value">{{ finalAmount | currency: "S/." }}</div>
+    </div>
+  </div>
+  <form [formGroup]="orderPayloadForm">
+    <!-- <label class="select">
+      <span class="label">Tipo de Pago</span>
+      <select class="select-neutral" formControlName="payment_method">
+        <option>Transferencia Bancaria</option>
+        <option>YAPE</option>
+        <option>Tarjeta de Crédito</option>
+      </select>
+    </label> -->
+    <fieldset class="fieldset">
+      <legend class="fieldset-legend">Nota:</legend>
+      <textarea formControlName="notes" class="textarea h-20 w-full placeholder-gray-400"
+        placeholder="Escribir nota ..."></textarea>
+      <div class="label">Opcional</div>
+    </fieldset>
+    <div class="flex justify-end">
+      <button type="submit" class="btn btn-primary shadow-lg" [disabled]="!orderPayloadForm.valid"
+        (click)="saveOrder()">
+        Generar Pedido
+      </button>
+    </div>
+  </form>
+</div>

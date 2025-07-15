@@ -8,17 +8,17 @@ import { CartModal } from "@features/cart/components/cart-modal/cart-modal";
   styleUrls: ['./header.css'],
 })
 export class Header {
-  @ViewChild('cartModalRef') customerModalComponent!: CartModal;
+  @ViewChild('cartModalRef') cartModal!: CartModal;
 
   ngAfterViewInit(): void {
     // Es una buena práctica verificar que la referencia ya esté disponible
-    console.log('Referencia al modal de clientes:', this.customerModalComponent);
+    console.log('Referencia al modal de clientes:', this.cartModal);
   }
 
   openCartModal(): void {
     // Llama al método `openModal()` del componente hijo para mostrar el modal
-    if (this.customerModalComponent) {
-      this.customerModalComponent.openModal();
+    if (this.cartModal) {
+      this.cartModal.openModal();
     }
   }
 
