@@ -11,6 +11,7 @@ import { MyCart, MyCartDetail, MyCartDetailExtraOption } from '@core/models/cart
 
 import { getProductPrice } from '@shared/utils/priceDisplay';
 import { MyCartIndexedDBService } from '@features/cart/service/my-cart-idb';
+import { Product } from '@core/models/product';
 
 @Component({
   selector: 'app-extra-option-list',
@@ -133,6 +134,9 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
 
   quantityExtraOption: number = 1;
 
+  allProducts: Product[] = [];
+
+  typeClient: 'final' | 'imprentero' = 'final'; // Tipo de cliente, por defecto 'final'
 
   private formBuilder = inject(FormBuilder);
   dimensionsForm = this.formBuilder.group({
@@ -156,14 +160,18 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
     enmarcado: this.formBuilder.control<string | null>(null),
   });
 
+  dimensionTroqueladoForm = this.formBuilder.group({
+    diameter: this.formBuilder.control<number | null>(null),
+    quantity: this.formBuilder.control<number | null>(null),
+  });
 
 
   async ngOnInit() {
     this.route.paramMap.subscribe(async params => {
       this.productId = Number(params.get('productId'));
       this.productTypeId = Number(params.get('productTypeId'));
-      const allProducts = await this.productIDBService.getAll();
-      this.priceBaseVinil = allProducts.find(product => product.id === this.productId)?.price ?? 0;
+      this.allProducts = await this.productIDBService.getAll();
+      this.priceBaseVinil = this.allProducts.find(product => product.id === this.productId)?.price ?? 0;
       console.log('precio base vinil:', this.priceBaseVinil);
 
       //////// MY CART///////////////
@@ -173,13 +181,13 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
       console.log('My Cart LAST :', this.myCart);
 
 
-      const typeClient = this.myCart?.customer?.type_client.name.includes('Final')
+      this.typeClient = this.myCart?.customer?.type_client.name.includes('Final')
         ? 'final'
         : 'imprentero';
 
-      this.productExists = allProducts.some(product => product.id === this.productId);
+      this.productExists = this.allProducts.some(product => product.id === this.productId);
 
-      this.productTypeExists = allProducts.map(
+      this.productTypeExists = this.allProducts.map(
         (product) => {
           const productType = product.product_types.some(
             pt => pt.id === this.productTypeId
@@ -195,22 +203,22 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
         return;
       }
       if (this.productId === 1) {
-        this.priceBase = getPriceGigaForTypeClient(typeClient, 1) * (1.18) * (1 + (this.myCart?.customer?.type_client?.margin ?? 0));
+        this.priceBase = getPriceGigaForTypeClient(this.typeClient, 1) * (1.18) * (1 + (this.myCart?.customer?.type_client?.margin ?? 0));
       } else if (this.productId >= 2 && this.productId <= 9) {
 
-        this.priceBase = getPriceVinylForTypeClient(this.productId, typeClient, this.priceBaseVinil) * (1.18) * (1 + (this.myCart?.customer?.type_client?.margin ?? 0));
+        this.priceBase = getPriceVinylForTypeClient(this.productId, this.typeClient, this.priceBaseVinil) * (1.18) * (1 + (this.myCart?.customer?.type_client?.margin ?? 0));
         // console.log('Precio Base Vinil:', this.priceBase);
       }
 
-      const extraOptions = allProducts.find(product => product.id === this.productId)?.extra_options ?? [];
-      this.nameProduct = allProducts.find(product => product.id === this.productId)?.name ?? '';
+      const extraOptions = this.allProducts.find(product => product.id === this.productId)?.extra_options ?? [];
+      this.nameProduct = this.allProducts.find(product => product.id === this.productId)?.name ?? '';
       this.extraOption = extraOptions.sort((a, b) => a.id - b.id);
 
 
 
       this.dimensionsForm.get('quantity')?.valueChanges.subscribe((qty: number | null) => {
         this.quantity = qty ?? 1;
-        const priceBase = allProducts.find(product => product.id === this.productId)?.price ?? 0;
+        const priceBase = this.allProducts.find(product => product.id === this.productId)?.price ?? 0;
         const typeClient = this.myCart?.customer?.type_client.name.includes('Final')
           ? 'final'
           : 'imprentero';
@@ -436,6 +444,63 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
       manoDeObra: null,
     });
     this.cdr.detectChanges();
+  }
+
+  displayTroquelado() {
+    const data = [
+      { name: 'Troquelado 1cm diametro', price: 90 },
+      { name: 'Troquelado 1.5cm diametro', price: 90 },
+      { name: 'Troquelado 2cm diametro', price: 50 },
+      { name: 'Troquelado 2.5cm diametro', price: 50 },
+      { name: 'Troquelado 3cm diametro', price: 40 },
+      { name: 'Troquelado 3.5cm diametro', price: 20 },
+      { name: 'Troquelado mayor o igual 4cm diametro', price: 10 },
+    ]
+    this.dimensionTroqueladoForm.setValue({
+      diameter: this.dimensionTroqueladoForm.get('diameter')?.value ?? null,
+      quantity: this.dimensionTroqueladoForm.get('quantity')?.value ?? null,
+    })
+    console.log('Datos de Troquelado:', this.dimensionTroqueladoForm.value);
+
+
+
+    const widthVinil = 1500 // mm
+    const margitTop = 27.5 // mm
+    const margitBottom = 27.5 // mm
+    const margitLeft = 30 // mm
+    const margitRight = 30 // mm
+    const xPrint = 1440 // mm
+    const yPrint = 945 // mm
+    const cut = 5 // mm
+
+    const diameter = (this.dimensionTroqueladoForm.get('diameter')?.value ?? null)! * 10;
+    const quantity = this.dimensionTroqueladoForm.get('quantity')?.value ?? null;
+
+    const quantityColumns = Math.floor((xPrint + cut) / (diameter! + 5))
+    const quantityRows = Math.floor((yPrint + cut) / (diameter! + 5));
+    const multiply = quantityColumns * quantityRows;
+
+    let finalLinearMeter = 0;
+    if (diameter == 10) {
+      const precioLinearMeter = this.allProducts.find(product => product.id === this.productId)?.extra_options.find(option => option.name === 'Troquelado 1cm diametro')?.price || 0;
+      const priceLineTroquelado = Math.round((precioLinearMeter / quantityRows) * 100) / 100;
+      const quantityInputRows = Math.ceil(quantity! / quantityColumns);
+      finalLinearMeter = quantityRows * diameter + cut * (quantityInputRows - 1) + margitTop + margitBottom;
+
+      const priceFinalLineTroquelado = Math.round(priceLineTroquelado * quantityInputRows * 10) / 10;
+
+
+      console.log('Final Linear Meter:', finalLinearMeter);
+      console.log('quatityRows:', quantityRows);
+      console.log('Cantidad de Troquelado:', quantityInputRows * quantityColumns);
+      console.log('Precio :', priceFinalLineTroquelado)
+      console.log('Vinil', getPriceVinylForTypeClient(this.productId, this.typeClient, this.priceBaseVinil) * (1.18) * (1 + (this.myCart?.customer?.type_client?.margin ?? 0)));
+    }
+
+    console.log('########################################')
+    console.log('Cantidad X Troquelado:', quantityColumns);
+    console.log('Cantidad Y Troquelado:', quantityRows);
+    console.log('Cantidad Total Troquelado:', multiply);
   }
 }
 

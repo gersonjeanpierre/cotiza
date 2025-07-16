@@ -84,17 +84,28 @@ export class ListOrders {
 
         const lowerCaseFilter = filterTerm.toLowerCase();
         return sortedOrders.filter(order => {
-          // Buscar en ID, nombre del cliente, método de pago, notas
+          // Buscar en ID, nombre del cliente, método de pago, notas, y fecha dd/mm
           const customerName = order.customer?.entity_type === 'N'
             ? `${order.customer?.name} ${order.customer?.last_name}`
             : order.customer?.business_name || '';
+
+          // Formatear la fecha como dd/mm
+          let formattedDate = '';
+          let isoDate = '';
+          if (order.created_at) {
+            const dateObj = new Date(order.created_at);
+            const day = String(dateObj.getDate()).padStart(2, '0');
+            const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+            formattedDate = `${day}/${month}`;
+            isoDate = dateObj.toISOString().toLowerCase();
+          }
 
           return (
             order.id?.toString().includes(filterTerm) ||
             customerName.toLowerCase().includes(lowerCaseFilter) ||
             order.payment_method?.toLowerCase().includes(lowerCaseFilter) ||
-            order.notes?.toLowerCase().includes(lowerCaseFilter) ||
-            order.shipping_address?.toLowerCase().includes(lowerCaseFilter)
+            (isoDate && isoDate.includes(lowerCaseFilter)) ||
+            (formattedDate && formattedDate.includes(lowerCaseFilter))
           );
         });
       }),
