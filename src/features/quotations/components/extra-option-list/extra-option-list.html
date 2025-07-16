@@ -34,198 +34,232 @@
   </button>
 </div>
 
-@if (productExists && productTypeExists ) {
-<h2 class="text-3xl font-bold mb-2">{{ nameProduct }}</h2>
-@if (productId == 1 && selectedCustomer) {
-<p class="font-medium mb-3">
-  Precio Metro Cuadrado: {{ priceBase | currency: "S/." }}
-</p>
-} @else if (productId >= 2 && productId <= 9 && selectedCustomer) { <p class="font-medium mb-3">
-  Precio Metro Lineal: {{ priceBase | currency: "S/." }}
+<div class="w-3xl">
+  @if (productExists && productTypeExists ) {
+  <h2 class="text-3xl font-bold mb-2">{{ nameProduct }}</h2>
+  @if (productId == 1 && selectedCustomer) {
+  <p class="font-medium mb-3">
+    Precio Metro Cuadrado: {{ priceBase | currency: "S/." }}
   </p>
-  }
-  <form [formGroup]="dimensionsForm" (ngSubmit)="onSubmit()" class="flex gap-5">
-    <fieldset class="fieldset">
-      <legend class="fieldset-legend text-lg">Largo</legend>
-      <input type="number" class="input input-neutral rounded-2xl validator" required min="0.01" step="0.01" max="100"
-        formControlName="height" />
-      <p class="validator-hint m-0">Ingresa un valor con 2 decimales</p>
-    </fieldset>
+  } @else if (productId >= 2 && productId <= 9 && selectedCustomer) { <p class="font-medium mb-3">
+    Precio Metro Lineal: {{ priceBase | currency: "S/." }}
+    </p>
+    }
+    <div class="tabs tabs-lift">
+      <input type="radio" name="my_tabs_3" class="tab" aria-label="Metro Lineal" checked="checked" />
+      <div class="tab-content bg-base-100 border-base-300 p-6">
+        <form [formGroup]="dimensionsForm" (ngSubmit)="onSubmit()" class="flex gap-5">
+          <fieldset class="fieldset">
+            <legend class="fieldset-legend text-lg">Largo</legend>
+            <input type="number" class="input input-neutral rounded-2xl validator" required min="0.01" step="0.01"
+              max="100" formControlName="height" />
+            <p class="validator-hint m-0">Ingresa un valor con 2 decimales</p>
+          </fieldset>
 
-    @if (productId === 1) {
-    <fieldset class="fieldset">
-      <legend class="fieldset-legend text-lg">Ancho</legend>
-      <input type="number" class="input input-neutral rounded-2xl validator" required min="0.01" step="0.01" max="100"
-        formControlName="width" />
-      <p class="validator-hint m-0">Ingresa un valor con 2 decimales</p>
-    </fieldset>
-    } @else if (productId >= 2 && productId <= 9) { <fieldset class="fieldset">
-      <legend class="fieldset-legend text-lg">Ancho</legend>
-      <input type="number" class="input input-neutral rounded-2xl validator" required min="0.01" step="0.01" max="1.50"
-        formControlName="width" />
-      <p class="validator-hint m-0">Ingresa un valor menor a 1.5</p>
-      </fieldset>
-      }
-      <fieldset class="fieldset">
-        <legend class="fieldset-legend text-lg">Cantidad</legend>
-        <input type="number" class="input input-neutral rounded-2xl validator" required min="1" value="1"
-          formControlName="quantity" />
-        <p class="validator-hint m-0">Ingresa un valor entero.</p>
-      </fieldset>
-      <div class="flex flex-col justify-end gap-4">
-        <button class="btn btn-outline btn-primary" type="button" (click)="onClean()">
-          Limpiar
-        </button>
-        <button class="btn btn-outline btn-primary" type="submit">
-          Calcular
-        </button>
+          @if (productId === 1) {
+          <fieldset class="fieldset">
+            <legend class="fieldset-legend text-lg">Ancho</legend>
+            <input type="number" class="input input-neutral rounded-2xl validator" required min="0.01" step="0.01"
+              max="100" formControlName="width" />
+            <p class="validator-hint m-0">Ingresa un valor con 2 decimales</p>
+          </fieldset>
+          } @else if (productId >= 2 && productId <= 9) { <fieldset class="fieldset">
+            <legend class="fieldset-legend text-lg">Ancho</legend>
+            <input type="number" class="input input-neutral rounded-2xl validator" required min="0.01" step="0.01"
+              max="1.50" formControlName="width" />
+            <p class="validator-hint m-0">Ingresa un valor menor a 1.5</p>
+            </fieldset>
+            }
+            <fieldset class="fieldset">
+              <legend class="fieldset-legend text-lg">Cantidad</legend>
+              <input type="number" class="input input-neutral rounded-2xl validator" required min="1" value="1"
+                formControlName="quantity" />
+              <p class="validator-hint m-0">Ingresa un valor entero.</p>
+            </fieldset>
+            <div class="flex flex-col justify-end gap-4">
+              <button class="btn btn-outline btn-primary" type="button" (click)="onClean()">
+                Limpiar
+              </button>
+              <button class="btn btn-outline btn-primary" type="submit">
+                Calcular
+              </button>
+            </div>
+        </form>
       </div>
-  </form>
 
-  @if (isCalculating) {
-  <div class="flex gap-5 mb-4">
-    <div class="flex flex-col gap-2">
-      <h3 class="text-xl font-bold">Precio</h3>
-      @if (productId === 1) {
-      <p>Precio base: {{ priceBase | currency: "S/." }}</p>
-      <p>Total: {{ priceQuantityMS | currency: "S/." }}</p>
-      } @else if (productId >= 2 && productId <= 9) { <p>Precio base: {{ priceBase | currency: "S/." }}</p>
-        <p>Precio unitario: {{ priceUnit | currency: "S/." }}</p>
-        }
-    </div>
-    <div class="flex flex-col gap-2">
-      <h3 class="text-xl font-bold">Area</h3>
-      @if (productId === 1) {
-      <p>Area: {{ area }} m<sup>2</sup></p>
-      } @else if (productId >= 2 && productId <= 9) { <p>Metro Lineal: {{ height }} m</p>
-        }
-    </div>
-  </div>
-  <div style="margin: 2rem 0; border: 2px solid #333; background: #e0e7ef" [style.width.px]="width * 75"
-    [style.height.px]="height * 75"></div>
-  }
-  <!-- F O R M    G I G A N T O G R A F I A-->
-  @if (productId === 1) {
-  <form class="flex flex-col gap-5 mt-4" [formGroup]="extraOptionGigaForm" (ngSubmit)="calculateExtraOptionPrice()">
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      @for (option of extraOption; track $index) {
-      @if (option.id === 1) {
-      <label class="font-bold block mb-2">{{ option.name }}:</label>
-      <select formControlName="termosellado" class="select select-neutral">
-        <option disabled selected>Selecciona</option>
-        <option>Ancho</option>
-        <option>Largo</option>
-        <option>Ambos</option>
-        <option>Sin {{ option.name }}</option>
-      </select>
-      }
-      @if (option.id === 2) {
-      <label class="font-bold block mb-2">{{ option.name }}:</label>
-      <select formControlName="tuboColgante" class="select select-neutral">
-        <option disabled selected>Selecciona</option>
-        <option>Ancho</option>
-        <option>Largo</option>
-        <option>Ambos</option>
-        <option>Sin {{ option.name }}</option>
-      </select>
-      }
-      @if (option.id === 3) {
-      <label class="font-bold block mb-2">{{ option.name }}:</label>
-      <input formControlName="ojales" type="number" min="1" placeholder="Ingrese la cantidad"
-        class="input input-neutral" />
-      }
-      @if (option.id === 4) {
-      <label class="font-bold block mb-2">{{ option.name }}:</label>
-      <select formControlName="enmarcado" class="select select-neutral">
-        <option disabled selected>Selecciona</option>
-        <option>Aplicar</option>
-        <option>Sin {{ option.name }}</option>
-      </select>
-      }
-      }
-    </div>
-    <button class="btn btn-outline btn-primary" type="submit">
-      Agregar Extras
-    </button>
-  </form>
-  }
-  <!-- F O R M    V I N IL -->
-  @if (productId > 1 && productId <= 9) { <form class="flex flex-col gap-5 mt-4" [formGroup]="extraOptionVinForm"
-    (ngSubmit)="calculateExtraOptionPrice()">
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div>
-        <label class="font-bold block mb-2">Laminado (elige uno):</label>
-        @for (option of extraOption; track $index) {
-        @if (option.name.toLocaleLowerCase().includes("laminado")) {
-        <div class="mb-4">
-          <div class="flex flex-col gap-2">
-            <label class="flex items-center gap-2">
-              <input type="radio" [value]="option.id" class="radio radio-sm radio-neutral" formControlName="laminado" />
-              {{ option.name }}
-            </label>
+      <input type="radio" name="my_tabs_3" class="tab" aria-label="Troquelado" />
+      <div class="tab-content bg-base-100 border-base-300 p-6">
+        <form action="" class="flex gap-5" [formGroup]="dimensionTroqueladoForm" (ngSubmit)="displayTroquelado()">
+          <fieldset class="fieldset">
+            <legend class="fieldset-legend text-lg">Diametro</legend>
+            <input type="number" class="input input-neutral rounded-2xl validator" required min="1" step="0.5" max="100"
+              formControlName="diameter" required />
+            <p class="validator-hint m-0">Ingresa un valor con 1 decimales</p>
+          </fieldset>
+          <fieldset class="fieldset">
+            <legend class="fieldset-legend text-lg">Numero de Troquelado</legend>
+            <input type="number" class="input input-neutral rounded-2xl validator" required min="1" step="1"
+              formControlName="quantity" required />
+            <p class="validator-hint m-0">Ingresa un valor con 2 decimales</p>
+          </fieldset>
+          <div class="flex flex-col justify-end gap-4">
+            <button class="btn btn-outline btn-primary" type="submit">
+              Calcular
+            </button>
           </div>
-        </div>
-        }
-        }
+        </form>
       </div>
-      <div>
-        <label class="font-bold block mb-2">Celtex o Foam (elige uno):</label>
-        @for (option of extraOption; track $index) {
-        @if (
-        option.name.toLocaleLowerCase().includes("celtex") ||
-        option.name.toLocaleLowerCase().includes("foam")
-        ) {
-        <div class="mb-4">
-          <div class="flex flex-col gap-2">
-            <label class="flex items-center gap-2">
-              <input type="radio" [value]="option.id" class="radio radio-sm radio-neutral"
-                formControlName="celtexFoam" />
-              {{ option.name }}
-            </label>
-          </div>
-        </div>
-        }
-        }
-      </div>
+
     </div>
-    @if (extraOptionVinForm.get("celtexFoam")?.value) {
-    @for (option of extraOption; track $index) {
-    @if (option.name.toLowerCase().includes("mano de obra")) {
-    <div class="mb-4">
+
+
+    @if (isCalculating) {
+    <div class="flex gap-5 mb-4">
       <div class="flex flex-col gap-2">
-        <label class="flex items-center gap-2">
-          {{ option.name }}
-        </label>
+        <h3 class="text-xl font-bold">Precio</h3>
+        @if (productId === 1) {
+        <p>Precio base: {{ priceBase | currency: "S/." }}</p>
+        <p>Total: {{ priceQuantityMS | currency: "S/." }}</p>
+        } @else if (productId >= 2 && productId <= 9) { <p>Precio base: {{ priceBase | currency: "S/." }}</p>
+          <p>Precio unitario: {{ priceUnit | currency: "S/." }}</p>
+          }
       </div>
-      <div class="flex gap-4">
-        <fieldset class="fieldset">
-          <legend class="fieldset-legend text-lg">Largo</legend>
-          <input type="number" class="input input-neutral rounded-2xl validator" required min="0.01" step="0.01"
-            max="100" formControlName="height" />
-          <p class="validator-hint m-0">
-            Ingresa un valor con 2 decimales
-          </p>
-        </fieldset>
-        <fieldset class="fieldset">
-          <legend class="fieldset-legend text-lg">Ancho</legend>
-          <input type="number" class="input input-neutral rounded-2xl validator" required min="0.01" step="0.01"
-            max="1.50" formControlName="width" />
-          <p class="validator-hint m-0">
-            Ingresa un valor con 2 decimales
-          </p>
-        </fieldset>
+      <div class="flex flex-col gap-2">
+        <h3 class="text-xl font-bold">Area</h3>
+        @if (productId === 1) {
+        <p>Area: {{ area }} m<sup>2</sup></p>
+        } @else if (productId >= 2 && productId <= 9) { <p>Metro Lineal: {{ height }} m</p>
+          }
       </div>
     </div>
+    <div style="margin: 2rem 0; border: 2px solid #333; background: #e0e7ef" [style.width.px]="width * 75"
+      [style.height.px]="height * 75"></div>
     }
-    }
-    }
-    <button class="btn btn-outline btn-primary" type="submit">
-      Agregar Extras
-    </button>
+    <!-- F O R M    G I G A N T O G R A F I A-->
+    @if (productId === 1) {
+    <form class="flex flex-col gap-5 mt-4" [formGroup]="extraOptionGigaForm" (ngSubmit)="calculateExtraOptionPrice()">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        @for (option of extraOption; track $index) {
+        @if (option.id === 1) {
+        <label class="font-bold block mb-2">{{ option.name }}:</label>
+        <select formControlName="termosellado" class="select select-neutral">
+          <option disabled selected>Selecciona</option>
+          <option>Ancho</option>
+          <option>Largo</option>
+          <option>Ambos</option>
+          <option>Sin {{ option.name }}</option>
+        </select>
+        }
+        @if (option.id === 2) {
+        <label class="font-bold block mb-2">{{ option.name }}:</label>
+        <select formControlName="tuboColgante" class="select select-neutral">
+          <option disabled selected>Selecciona</option>
+          <option>Ancho</option>
+          <option>Largo</option>
+          <option>Ambos</option>
+          <option>Sin {{ option.name }}</option>
+        </select>
+        }
+        @if (option.id === 3) {
+        <label class="font-bold block mb-2">{{ option.name }}:</label>
+        <input formControlName="ojales" type="number" min="1" placeholder="Ingrese la cantidad"
+          class="input input-neutral" />
+        }
+        @if (option.id === 4) {
+        <label class="font-bold block mb-2">{{ option.name }}:</label>
+        <select formControlName="enmarcado" class="select select-neutral">
+          <option disabled selected>Selecciona</option>
+          <option>Aplicar</option>
+          <option>Sin {{ option.name }}</option>
+        </select>
+        }
+        }
+      </div>
+      <button class="btn btn-outline btn-primary" type="submit">
+        Agregar Extras
+      </button>
     </form>
     }
-    } @else {
-    <div class="alert alert-warning mt-4">
-      El producto no existe o la ruta es inválida.
-    </div>
-    }
+    <!-- F O R M    V I N IL -->
+    @if (productId > 1 && productId <= 9) { <form class="flex flex-col gap-5 mt-4" [formGroup]="extraOptionVinForm"
+      (ngSubmit)="calculateExtraOptionPrice()">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label class="font-bold block mb-2">Laminado (elige uno):</label>
+          @for (option of extraOption; track $index) {
+          @if (option.name.toLocaleLowerCase().includes("laminado")) {
+          <div class="mb-4">
+            <div class="flex flex-col gap-2">
+              <label class="flex items-center gap-2">
+                <input type="radio" [value]="option.id" class="radio radio-sm radio-neutral"
+                  formControlName="laminado" />
+                {{ option.name }}
+              </label>
+            </div>
+          </div>
+          }
+          }
+        </div>
+        <div>
+          <label class="font-bold block mb-2">Celtex o Foam (elige uno):</label>
+          @for (option of extraOption; track $index) {
+          @if (
+          option.name.toLocaleLowerCase().includes("celtex") ||
+          option.name.toLocaleLowerCase().includes("foam")
+          ) {
+          <div class="mb-4">
+            <div class="flex flex-col gap-2">
+              <label class="flex items-center gap-2">
+                <input type="radio" [value]="option.id" class="radio radio-sm radio-neutral"
+                  formControlName="celtexFoam" />
+                {{ option.name }}
+              </label>
+            </div>
+          </div>
+          }
+          }
+        </div>
+      </div>
+      @if (extraOptionVinForm.get("celtexFoam")?.value) {
+      @for (option of extraOption; track $index) {
+      @if (option.name.toLowerCase().includes("mano de obra")) {
+      <div class="mb-4">
+        <div class="flex flex-col gap-2">
+          <label class="flex items-center gap-2">
+            {{ option.name }}
+          </label>
+        </div>
+        <div class="flex gap-4">
+          <fieldset class="fieldset">
+            <legend class="fieldset-legend text-lg">Largo</legend>
+            <input type="number" class="input input-neutral rounded-2xl validator" required min="0.01" step="0.01"
+              max="100" formControlName="height" />
+            <p class="validator-hint m-0">
+              Ingresa un valor con 2 decimales
+            </p>
+          </fieldset>
+          <fieldset class="fieldset">
+            <legend class="fieldset-legend text-lg">Ancho</legend>
+            <input type="number" class="input input-neutral rounded-2xl validator" required min="0.01" step="0.01"
+              max="1.50" formControlName="width" />
+            <p class="validator-hint m-0">
+              Ingresa un valor con 2 decimales
+            </p>
+          </fieldset>
+        </div>
+      </div>
+      }
+      }
+      }
+      <button class="btn btn-outline btn-primary" type="submit">
+        Agregar Extras
+      </button>
+      </form>
+      }
+      } @else {
+      <div class="alert alert-warning mt-4">
+        El producto no existe o la ruta es inválida.
+      </div>
+      }
+
+</div>

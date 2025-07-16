@@ -92,8 +92,8 @@ export class CustomerModal implements OnInit {
       )
     ]).pipe(
       map(([customers, filterTerm]) => {
-        // 1. Ordenar por ID de forma ascendente
-        const sortedCustomers = [...customers].sort((a, b) => a.id - b.id);
+        // 1. Ordenar por ID de forma descendente (del último al primero)
+        const sortedCustomers = [...customers].sort((a, b) => b.id - a.id);
 
         // 2. Filtrar la lista ordenada
         const lowerCaseFilter = filterTerm.toLowerCase();
