@@ -89,6 +89,10 @@ export class SelectProductType implements OnInit {
 
   onSelectProductType(productType: ProductType): void {
     const name = productType.name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    if (name === 'gigantografia') {
+      this.router.navigate(['/dashboard/cotizaciones/tiposdeproductos/gigantografia/1/1']);
+      return;
+    }
     this.router.navigate([`/dashboard/cotizaciones/tiposdeproductos/${name}`, productType.id]);
   }
 }

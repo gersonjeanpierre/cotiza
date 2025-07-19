@@ -35,6 +35,7 @@ export class CartModal implements OnInit {
 
   igv: number = 0.18; // Porcentaje del IGV (18%)
   totalIgv: number = 0; // Total del IGV calculado
+  math: Math = Math; // Para usar Math en la plantilla
 
   constructor(
     private myCartIDBService: MyCartIndexedDBService,
@@ -61,6 +62,7 @@ export class CartModal implements OnInit {
       this.allProducts,
       this.igv
     );
+    console.log('Display My Cart:', this.displayMyCart);
 
     this.finalAmount = Number(this.getTotalCart().toFixed(2));
     this.totalAmount = Number((this.finalAmount / (1 + this.igv)).toFixed(2));

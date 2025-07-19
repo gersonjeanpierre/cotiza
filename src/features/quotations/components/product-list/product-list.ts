@@ -101,4 +101,8 @@ export class ProductList implements OnInit {
     console.log('Navegando a:', newPath);
     this.router.navigate([newPath]);
   }
+
+  goToProductList() {
+    this.router.navigate(['/dashboard/cotizaciones/tiposdeproductos']);
+  }
 }
