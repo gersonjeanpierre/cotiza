@@ -33,5 +33,11 @@ export class OrderService {
     });
   }
 
+  generateReportExcel() {
+    return this.http.get(`${this.apiUrl}/report/csv`, {
+      responseType: 'blob'
+    });
+  }
+
 
 }
