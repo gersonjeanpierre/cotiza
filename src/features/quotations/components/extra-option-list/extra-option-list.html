@@ -22,7 +22,7 @@
             d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
           ></path>
         </svg>
-        Lista de Productos
+        Modulos
       </a>
     </li>
     @if (productId == 1) {
@@ -275,15 +275,16 @@
       }
     }
     @if (productId >= 2 && productId <= 9) {
+      <!-- V I N I L O S -->
       <div class="tabs tabs-lift">
         <input
           type="radio"
           name="my_tabs_3"
-          class="tab"
+          class="tab [--tab-bg:white] font-semibold text-lg"
           aria-label="Metro Lineal"
           checked="checked"
         />
-        <div class="tab-content bg-base-100 border-base-300 p-6">
+        <div class="tab-content bg-white border-base-300 p-6">
           <form
             [formGroup]="dimensionsForm"
             (ngSubmit)="onSubmit()"
@@ -471,10 +472,10 @@
         <input
           type="radio"
           name="my_tabs_3"
-          class="tab"
+          class="tab [--tab-bg:white] font-semibold text-lg"
           aria-label="Troquelado"
         />
-        <div class="tab-content bg-base-100 border-base-300 p-6">
+        <div class="tab-content bg-white border-base-300 p-6">
           <form
             action=""
             class="flex gap-5"

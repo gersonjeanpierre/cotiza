@@ -41,6 +41,24 @@ export class MyCartIndexedDBService {
     return await this.db.my_cart.where('customer_id').equals(customerId).first();
   }
 
+  // async saveMyCartDetail(myCartDetail: MyCartDetail, myCartId: number): Promise<void> {
+  //   const myCart = await this.db.my_cart.get(myCartId);
+  //   if (!myCart) {
+  //     throw new Error(`MyCart with ID ${myCartId} not found`);
+  //   }
+  //   if (!myCart.details) {
+  //     myCart.details = [];
+  //   }
+  //   const existingIndex = myCart.details.findIndex(detail => detail.product_id === myCartDetail.product_id);
+  //   if (existingIndex !== -1) {
+  //     // Actualiza el detalle existente
+  //     myCart.details[existingIndex] = myCartDetail;
+  //   } else {
+  //     // Agrega un nuevo detalle
+  //     myCart.details.push(myCartDetail);
+  //   }
+  //   await this.db.my_cart.put(myCart);
+  // }
   async saveMyCartDetail(myCartDetail: MyCartDetail, myCartId: number): Promise<void> {
     const myCart = await this.db.my_cart.get(myCartId);
     if (!myCart) {
@@ -49,17 +67,10 @@ export class MyCartIndexedDBService {
     if (!myCart.details) {
       myCart.details = [];
     }
-    const existingIndex = myCart.details.findIndex(detail => detail.product_id === myCartDetail.product_id);
-    if (existingIndex !== -1) {
-      // Actualiza el detalle existente
-      myCart.details[existingIndex] = myCartDetail;
-    } else {
-      // Agrega un nuevo detalle
-      myCart.details.push(myCartDetail);
-    }
+    // Siempre agrega el nuevo detalle, aunque tenga el mismo product_id
+    myCart.details.push(myCartDetail);
     await this.db.my_cart.put(myCart);
   }
-
   async deleteMyCartDetail(myCartId: number, productId: number): Promise<void> {
     const myCart = await this.db.my_cart.get(myCartId);
     if (!myCart) {
@@ -77,7 +88,41 @@ export class MyCartIndexedDBService {
     await this.db.my_cart.put(myCart);
   }
 
-  async saveMyCartDetailExtraOptions(extraOptions: MyCartDetailExtraOption[], myCartId: number, productId: number): Promise<void> {
+  // async saveMyCartDetailExtraOptions(extraOptions: MyCartDetailExtraOption[], myCartId: number, productId: number): Promise<void> {
+  //   const myCart = await this.db.my_cart.get(myCartId);
+  //   if (!myCart) {
+  //     throw new Error(`El MyCart con ID ${myCartId} no fue encontrado`);
+  //   }
+  //   if (!myCart.details) {
+  //     myCart.details = [];
+  //   }
+  //   const detailIndex = myCart.details.findIndex(detail => detail.product_id === productId);
+  //   if (detailIndex === -1) {
+  //     throw new Error(`El detalle con product_id ${productId} no fue encontrado en el MyCart con ID ${myCartId}`);
+  //   }
+  //   const existingDetail = myCart.details[detailIndex];
+  //   if (!existingDetail.extra_options) {
+  //     existingDetail.extra_options = [];
+  //   }
+  //   // Actualiza las opciones extra del detalle
+  //   for (const option of extraOptions) {
+  //     const existingOptionIndex = existingDetail.extra_options.findIndex(opt => opt.extra_option_id === option.extra_option_id);
+  //     if (existingOptionIndex !== -1) {
+  //       // Actualiza la opción existente
+  //       existingDetail.extra_options[existingOptionIndex] = option;
+  //     } else {
+  //       // Agrega una nueva opción
+  //       existingDetail.extra_options.push(option);
+  //     }
+  //   }
+  //   // Guarda el myCart actualizado
+  //   await this.db.my_cart.put(myCart);
+  // }
+  async saveMyCartDetailExtraOptions(
+    extraOptions: MyCartDetailExtraOption[],
+    myCartId: number,
+    detailId: string // <-- ahora recibe el detail_id único
+  ): Promise<void> {
     const myCart = await this.db.my_cart.get(myCartId);
     if (!myCart) {
       throw new Error(`El MyCart con ID ${myCartId} no fue encontrado`);
@@ -85,26 +130,21 @@ export class MyCartIndexedDBService {
     if (!myCart.details) {
       myCart.details = [];
     }
-    const detailIndex = myCart.details.findIndex(detail => detail.product_id === productId);
-    if (detailIndex === -1) {
-      throw new Error(`El detalle con product_id ${productId} no fue encontrado en el MyCart con ID ${myCartId}`);
+    const detail = myCart.details.find(d => d.detail_id === detailId);
+    if (!detail) {
+      throw new Error(`El detalle con detail_id ${detailId} no fue encontrado en el MyCart con ID ${myCartId}`);
     }
-    const existingDetail = myCart.details[detailIndex];
-    if (!existingDetail.extra_options) {
-      existingDetail.extra_options = [];
+    if (!detail.extra_options) {
+      detail.extra_options = [];
     }
-    // Actualiza las opciones extra del detalle
     for (const option of extraOptions) {
-      const existingOptionIndex = existingDetail.extra_options.findIndex(opt => opt.extra_option_id === option.extra_option_id);
+      const existingOptionIndex = detail.extra_options.findIndex(opt => opt.extra_option_id === option.extra_option_id);
       if (existingOptionIndex !== -1) {
-        // Actualiza la opción existente
-        existingDetail.extra_options[existingOptionIndex] = option;
+        detail.extra_options[existingOptionIndex] = option;
       } else {
-        // Agrega una nueva opción
-        existingDetail.extra_options.push(option);
+        detail.extra_options.push(option);
       }
     }
-    // Guarda el myCart actualizado
     await this.db.my_cart.put(myCart);
   }
 

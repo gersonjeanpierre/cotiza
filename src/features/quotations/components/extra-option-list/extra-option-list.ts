@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectorRef, Component, inject, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ExtraOption } from '@core/models/extra-option';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
@@ -12,6 +12,8 @@ import { MyCart, MyCartDetail, MyCartDetailExtraOption } from '@core/models/cart
 import { getProductPrice } from '@shared/utils/priceDisplay';
 import { MyCartIndexedDBService } from '@features/cart/service/my-cart-idb';
 import { Product } from '@core/models/product';
+
+import { v6 as uuid } from 'uuid';
 
 @Component({
   selector: 'app-extra-option-list',
@@ -140,6 +142,9 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
   meterLinearTroquelado: number = 0; // Metro Lineal Troquelado
 
   typeClient: 'final' | 'imprentero' = 'final'; // Tipo de cliente, por defecto 'final'
+
+
+  isTroqueladoTabActive = signal<boolean>(false);
 
   private formBuilder = inject(FormBuilder);
   dimensionsForm = this.formBuilder.group({
@@ -294,6 +299,7 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
     this.extraOptionVinForm.get('height')?.setValue(this.height);// Metro Lineal
 
     this.myCartDetail = {
+      detail_id: uuid(),
       product_id: this.productId,
       height: this.height,
       width: this.width,
@@ -327,8 +333,9 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
       if (valueEnmarcado) {
         this.setCartExtraOptionGiga(ids.enmarcadoId, 1, valueEnmarcado);
       }
-      this.myCartIDBService.saveMyCartDetailExtraOptions(this.myCartDetailExtraOption ?? [], this.myCart?.id ?? 0, this.productId);
+      this.myCartIDBService.saveMyCartDetailExtraOptions(this.myCartDetailExtraOption ?? [], this.myCart?.id ?? 0, this.myCartDetail?.detail_id ?? "");
     }
+
 
     if (this.productId >= 2 && this.productId <= 9) {
       this.laminadoId = this.extraOptionVinForm.get('laminado')?.value ?? null;
@@ -344,11 +351,12 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
       this.setCartExtraOptionVin(this.celtexFoamId ?? 0);
       console.log()
       if (this.myCartId !== 0) {
-        this.myCartIDBService.saveMyCartDetailExtraOptions(this.myCartDetailExtraOption ?? [], this.myCart?.id ?? 0, this.productId);
+        this.myCartIDBService.saveMyCartDetailExtraOptions(this.myCartDetailExtraOption ?? [], this.myCart?.id ?? 0, this.myCartDetail?.detail_id ?? "");
       } else {
         console.error('No se puede guardar opciones extra: el carrito aún no tiene un id válido.');
       }
     }
+
 
 
   }
@@ -392,13 +400,23 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
       if (!this.myCartDetailExtraOption) {
         this.myCartDetailExtraOption = [];
       }
-      this.myCartDetailExtraOption?.push({
-        extra_option_id: id,
-        quantity: this.quantity ?? null,
-        linear_meter: this.height ?? null,
-        width: this.width ?? null,
-        giga_select: null,
-      });
+      if (this.isTroqueladoTabActive()) {
+        this.myCartDetailExtraOption.push({
+          extra_option_id: id,
+          quantity: 1,
+          linear_meter: this.meterLinearTroquelado / 1000,
+          width: 1.5,
+          giga_select: null,
+        });
+      } else {
+        this.myCartDetailExtraOption?.push({
+          extra_option_id: id,
+          quantity: this.quantity ?? null,
+          linear_meter: this.height ?? null,
+          width: this.width ?? null,
+          giga_select: null,
+        });
+      }
     }
 
     if (id >= 10 && id <= 13) { // Foam Celtex
@@ -474,9 +492,8 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
     this.maxUnits = Math.ceil(quantity! / quantityColumns) * this.unitsPerRow;
 
     this.meterLinearTroquelado = quantityInputRows * diameterMm + cut * (quantityInputRows - 1) + margitTop + margitBottom;
-    if (this.meterLinearTroquelado >= 995 && this.meterLinearTroquelado <= 1000) {
-      this.meterLinearTroquelado = 1000;
-    }
+
+    this.height = this.meterLinearTroquelado / 1000;
 
     const subtotal = Math.round((this.meterLinearTroquelado * this.priceBase / 1000) * 10) / 10;
 
@@ -484,6 +501,7 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
     console.log(' Metro Lineal Troquelado:', this.meterLinearTroquelado);
     console.log('productBase:', this.priceBase);
     this.myCartDetail = {
+      detail_id: uuid(),
       product_id: this.productId,
       height: this.meterLinearTroquelado / 1000,
       width: 1.5,
@@ -504,7 +522,9 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
       width: diameterMm,
       giga_select: null,
     });
-    await this.myCartIDBService.saveMyCartDetailExtraOptions(this.myCartDetailExtraOption, this.myCart?.id ?? 0, this.productId);
+
+    this.isTroqueladoTabActive.set(true);
+    await this.myCartIDBService.saveMyCartDetailExtraOptions(this.myCartDetailExtraOption, this.myCart?.id ?? 0, this.myCartDetail?.detail_id ?? '');
 
     this.cdr.detectChanges();
   }

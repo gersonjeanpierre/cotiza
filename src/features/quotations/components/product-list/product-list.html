@@ -16,7 +16,7 @@
               d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
             ></path>
           </svg>
-          Lista de Productos
+          Modulos
         </a>
       </li>
       <li>
@@ -58,7 +58,7 @@
   }
   @if (!isLoading && !error && allProducts.length == 1) {
     @for (product of allProducts; track $index) {
-      <div class="card w-72 bg-base-100 card-md shadow-xl">
+      <div class="card w-72 bg-white card-md shadow-xl">
         <div class="card-body">
           <h2 class="card-title min-h-14">{{ product.name }}</h2>
           <div class="justify-center card-actions">
@@ -75,12 +75,12 @@
       <span class="text-3xl font-bold">Marca Chino</span>
       <div class="flex flex-wrap gap-6 my-5">
         @for (product of productsChino; track $index) {
-          <div class="card w-72 bg-base-100 card-md shadow-xl">
+          <div class="card w-72 bg-white card-md shadow-lg">
             <div class="card-body">
               <h2 class="card-title min-h-14">{{ product.name }}</h2>
               <div class="justify-center card-actions">
                 <button
-                  class="btn btn-neutral"
+                  class="btn btn-outline btn-neutral"
                   (click)="onSelectProduct(product)"
                 >
                   Seleccionar
@@ -95,12 +95,12 @@
       <span class="text-3xl font-bold">Marca Arclad</span>
       <div class="flex flex-wrap gap-6 my-5 items-stretch">
         @for (product of productsArclad; track $index) {
-          <div class="card w-72 bg-base-100 card-md shadow-xl">
+          <div class="card w-72 bg-white card-md shadow-lg">
             <div class="card-body">
               <h2 class="card-title min-h-14">{{ product.name }}</h2>
               <div class="justify-center card-actions">
                 <button
-                  class="btn btn-neutral"
+                  class="btn btn-outline btn-neutral"
                   (click)="onSelectProduct(product)"
                 >
                   Seleccionar

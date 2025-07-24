@@ -60,11 +60,11 @@ export function adaptOrderToMyCart(
             return sum + extra.price;
           }
           // Para otros, suma precio * cantidad
-          return sum + (extra.price * (extra.quantity || 1) || 0);
+          return sum + Math.round((extra.price * (extra.quantity || 1) || 0) * 10) / 10;
         }, 0)
         .toFixed(2),
     );
-    subtotalExtraOnly = Math.round(subtotalExtraOnly * 10) / 10; // Redondear a dos decimales
+    subtotalExtraOnly = Math.round(subtotalExtraOnly * 10) / 10;
 
     return {
       ...detail,
@@ -175,6 +175,10 @@ export const getPriceExtraOption = (
       giga_select ?? '',
     );
   }
+  if (extra_option_id >= 5 && extra_option_id <= 8) {
+    priceExtraOption = (price ?? 0) * (linear_meter ?? 0);
+  }
+
   if (extra_option_id >= 15 && extra_option_id <= 21) {
     // Troquelado, Troquelado con Giga y Troquelado con Vinil
     priceExtraOption = calculatePriceTroquelado(

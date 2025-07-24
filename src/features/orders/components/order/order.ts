@@ -99,7 +99,7 @@ export class OrderNew {
           extra_option_id: extra.extra_option_id || 0,
           quantity: extra.quantity || 1,
           linear_meter: extra.linear_meter || 1,
-          width: extra.width,
+          width: extra.width > 0 ? extra.width : 1,
           giga_select: extra.giga_select
         })) || []
       })) || []
@@ -108,9 +108,9 @@ export class OrderNew {
       this.orderPayloadForm.markAllAsTouched();
     }
 
-
-    console.log('Display My Cart:', this.displayMyCart);
     this.order = orderPayload;
+
+    console.log('Order Payload:', this.order);
 
     this.orderService.createOrder(this.order).subscribe({
       next: (response) => {

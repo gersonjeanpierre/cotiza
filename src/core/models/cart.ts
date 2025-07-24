@@ -16,6 +16,7 @@ export interface MyCart {
   details: MyCartDetail[];
 }
 export interface MyCartDetail {
+  detail_id?: string;
   product_id: number;
   height: number;
   width: number;
