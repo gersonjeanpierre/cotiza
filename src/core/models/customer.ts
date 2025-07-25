@@ -12,7 +12,7 @@ export interface Customer {
   last_name?: string | null;
   business_name?: string | null;
   phone_number: string;
-  email: string;
+  email?: string | null;
   created_at: string; // O Date, si se parsea
   updated_at?: string | null;
   deleted_at?: string | null;
@@ -28,5 +28,5 @@ export interface CreateCustomerPayload {
   last_name?: string | null;
   business_name?: string | null;
   phone_number: string;
-  email: string;
+  email?: string | null;
 }

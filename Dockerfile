@@ -1,4 +1,4 @@
-FROM node:22-alpine as builder
+FROM node:22-alpine AS builder
 
 WORKDIR /app
 
@@ -15,7 +15,7 @@ RUN bun install
 COPY . .
 RUN bun run build -- --output-path=./dist --configuration=production
 
-FROM nginx:alpine as runner
+FROM nginx:alpine AS runner
 
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 

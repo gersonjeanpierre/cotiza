@@ -1,5 +1,5 @@
 
-import { Component, ViewChild, Output, ElementRef, EventEmitter, inject, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, ViewChild, Output, ElementRef, EventEmitter, inject, OnInit, ChangeDetectorRef, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CreateCustomerPayload, Customer } from '@core/models/customer';
 import { CustomerService } from '@features/customer/service/customer';
@@ -7,10 +7,12 @@ import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, map
 import { Observable } from 'rxjs/internal/Observable';
 import { AsyncPipe } from '@angular/common';
 import { TypeClientIndexedDBService } from '@features/quotations/services/type-client-idb';
+import Swal from 'sweetalert2';
+import { ErrorModal } from "@shared/components/alert/error-modal/error-modal";
 
 @Component({
   selector: 'app-customer-modal',
-  imports: [ReactiveFormsModule, AsyncPipe],
+  imports: [ReactiveFormsModule, AsyncPipe, ErrorModal],
   templateUrl: './customer-modal.html',
   styleUrl: './customer-modal.css'
 })
@@ -48,6 +50,10 @@ export class CustomerModal implements OnInit {
   // Type Client
   typeCLients: { id: number, name: string }[] = [];
 
+  // Modal de error
+  showErrorModal = signal<boolean>(false);
+  errorMessage = signal<string>('');
+
   constructor(
     private customerService: CustomerService,
     private fb: FormBuilder,
@@ -58,7 +64,7 @@ export class CustomerModal implements OnInit {
       search: this.fb.control<string>('', Validators.required)
     });
     this.customerForm = this.fb.group({
-      type_client_id: this.fb.control(Validators.required),
+      type_client_id: this.fb.control(null, Validators.required),
       entity_type: this.fb.control<'N' | 'J'>('N', Validators.required),
       ruc: this.fb.control<string | null>(null),
       dni: this.fb.control<string | null>(null),
@@ -67,7 +73,7 @@ export class CustomerModal implements OnInit {
       last_name: this.fb.control<string | null>(null),
       business_name: this.fb.control<string | null>(null),
       phone_number: this.fb.control<string | null>(null),
-      email: this.fb.control<string | null>(null),
+      email: this.fb.control<string | null>(null)
     })
 
 
@@ -82,6 +88,26 @@ export class CustomerModal implements OnInit {
       name: typeClient.name
     })
     );
+
+    // Deshabilitar doc_foreign si hay valor en dni
+    this.customerForm.get('dni')?.valueChanges.subscribe(dniValue => {
+      const docForeignControl = this.customerForm.get('doc_foreign');
+      if (dniValue && dniValue.trim() !== '') {
+        docForeignControl?.disable({ emitEvent: false });
+      } else {
+        docForeignControl?.enable({ emitEvent: false });
+      }
+    });
+
+    // Deshabilitar dni si hay valor en doc_foreign
+    this.customerForm.get('doc_foreign')?.valueChanges.subscribe(docForeignValue => {
+      const dniControl = this.customerForm.get('dni');
+      if (docForeignValue && docForeignValue.trim() !== '') {
+        dniControl?.disable({ emitEvent: false });
+      } else {
+        dniControl?.enable({ emitEvent: false });
+      }
+    });
 
     // --- LÓGICA PRINCIPAL DE ORDENAMIENTO, FILTRADO Y PAGINACIÓN CON RxJS ---
     const filteredCustomers = combineLatest([
@@ -101,7 +127,7 @@ export class CustomerModal implements OnInit {
           customer.name?.toLowerCase().includes(lowerCaseFilter) ||
           customer.last_name?.toLowerCase().includes(lowerCaseFilter) ||
           customer.business_name?.toLowerCase().includes(lowerCaseFilter) ||
-          customer.email.toLowerCase().includes(lowerCaseFilter) ||
+          customer.email?.toLowerCase().includes(lowerCaseFilter) ||
           customer.dni?.includes(lowerCaseFilter) ||
           customer.ruc?.includes(lowerCaseFilter) ||
           customer.doc_foreign?.includes(lowerCaseFilter)
@@ -144,6 +170,12 @@ export class CustomerModal implements OnInit {
       this.cdr.detectChanges();
     });
 
+    window.addEventListener('keydown', this.handleEscKey);
+
+  }
+
+  ngDestroy(): void {
+    window.removeEventListener('keydown', this.handleEscKey);
   }
 
   // --- Métodos de control del Modal ---
@@ -155,6 +187,7 @@ export class CustomerModal implements OnInit {
 
   closeModal(): void {
     this.dialog.nativeElement.close();
+    this.showErrorModal.set(false); // Cierra el modal de error si está abierto
     this.currentView = 'list';
     this.searchForm.get('search')?.setValue(''); // Limpia el campo de búsqueda al cerrar
   }
@@ -206,11 +239,15 @@ export class CustomerModal implements OnInit {
   }
 
   saveCustomer(): void {
-    if (this.customerForm.invalid) {
-      this.customerForm.markAllAsTouched();
-      return;
-    }
+    // if (this.customerForm.invalid) {
+    //   this.customerForm.markAllAsTouched();
+    //   return;
+    // }
+
     const payload: CreateCustomerPayload = this.customerForm.value;
+
+    console.log('Payload:', payload);
+
     if (this.isEditing && this.editingCustomerId) {
       this.customerService.updateCustomer(this.editingCustomerId, payload).subscribe({
         next: () => {
@@ -223,7 +260,10 @@ export class CustomerModal implements OnInit {
           this.currentView = 'list';
           this.loadAllCustomers(); // Vuelve a cargar la lista para ver los cambios
         },
-        error: (err) => console.error('Error al actualizar cliente:', err)
+        error: (err) => {
+          this.errorMessage.set(err.message || 'Ocurrió un error inesperado');
+          this.showErrorModal.set(true);
+        }
       });
     } else {
       this.customerService.createCustomer(payload).subscribe({
@@ -232,7 +272,11 @@ export class CustomerModal implements OnInit {
           this.currentView = 'list';
           this.loadAllCustomers(); // Vuelve a cargar la lista para ver el nuevo cliente
         },
-        error: (err) => console.error('Error al crear cliente:', err)
+        error: (err) => {
+          console.error('Error al crear cliente:', err);
+          this.errorMessage.set(err.error?.detail?.[0]?.msg || err.message || 'Ocurrió un error inesperado');
+          this.showErrorModal.set(true);
+        }
       });
     }
   }
@@ -244,7 +288,11 @@ export class CustomerModal implements OnInit {
           this.customersChanged.emit();
           this.loadAllCustomers();
         },
-        error: (err) => console.error('Error al eliminar cliente:', err)
+        error: (err) => {
+          console.error('Error al actualizar cliente:', err);
+          this.errorMessage.set(err.error?.detail?.[0]?.msg || err.message || 'Ocurrió un error inesperado');
+          this.showErrorModal.set(true);
+        }
       });
     }
   }
@@ -259,19 +307,34 @@ export class CustomerModal implements OnInit {
     const lastNameControl = this.customerForm.get('last_name');
     const businessNameControl = this.customerForm.get('business_name');
     const rucControl = this.customerForm.get('ruc');
-    const dniControl = this.customerForm.get('dni');
-    const docForeignControl = this.customerForm.get('doc_foreign');
+    const phoneNumberControl = this.customerForm.get('phone_number');
 
-    [nameControl, lastNameControl, businessNameControl, rucControl, dniControl, docForeignControl].forEach(c => c?.clearValidators());
+    [nameControl, lastNameControl, businessNameControl, rucControl, phoneNumberControl].forEach(c => c?.clearValidators());
 
     if (entityType === 'N') {
       nameControl?.setValidators(Validators.required);
       lastNameControl?.setValidators(Validators.required);
+      phoneNumberControl?.setValidators([Validators.required, Validators.pattern(/^\d{9,15}$/)]);
     } else if (entityType === 'J') {
       businessNameControl?.setValidators(Validators.required);
       rucControl?.setValidators(Validators.required);
+      phoneNumberControl?.setValidators([Validators.required, Validators.pattern(/^\d{9,15}$/)]);
     }
 
-    [nameControl, lastNameControl, businessNameControl, rucControl, dniControl, docForeignControl].forEach(c => c?.updateValueAndValidity());
+    [nameControl, lastNameControl, businessNameControl, rucControl, phoneNumberControl].forEach(c => c?.updateValueAndValidity());
   }
+
+  handleEscKey = (event: KeyboardEvent) => {
+    if (event.key === 'Escape') {
+      if (this.showErrorModal()) {
+        this.showErrorModal.set(false);
+        // Previene que el <dialog> se cierre si solo quieres cerrar el error
+        // Si quieres cerrar ambos, sigue:
+        this.closeModal();
+      } else if (this.dialog?.nativeElement.open) {
+        this.closeModal();
+      }
+    }
+  };
+
 }
