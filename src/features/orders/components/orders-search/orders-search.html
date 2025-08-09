@@ -1,0 +1,20 @@
+<form [formGroup]="searchForm" class="flex gap-2">
+  <div class="flex-1">
+    <input
+      type="text"
+      formControlName="search"
+      placeholder="Buscar por ID, cliente, método de pago, fecha ..."
+      class="input input-bordered w-full"
+    />
+  </div>
+  <button
+    type="button"
+    (click)="onClearSearch()"
+    class="btn btn-outline btn-secondary"
+  >
+    Limpiar
+  </button>
+  <button (click)="onDownloadReportCsv()" class="btn btn-neutral">
+    Reporte
+  </button>
+</form>

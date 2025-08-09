@@ -176,6 +176,7 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
 
   async ngOnInit() {
     this.route.paramMap.subscribe(async params => {
+
       this.productId = Number(params.get('productId'));
       this.productTypeId = Number(params.get('productTypeId'));
       this.allProducts = await this.productIDBService.getAll();
@@ -204,6 +205,7 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
         }
       ).includes(true);
 
+      const profitMarginAndIgv = 1.18 * (1 + (this.myCart?.customer?.type_client?.margin ?? 0));
       if (!this.productExists) {
         // Aquí puedes redirigir, mostrar un mensaje o simplemente retornar
         console.warn('El producto no existe o la ruta es inválida');
@@ -211,11 +213,12 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
         return;
       }
       if (this.productId === 1) {
-        this.priceBase = getPriceGigaForTypeClient(this.typeClient, 1) * (1.18) * (1 + (this.myCart?.customer?.type_client?.margin ?? 0));
+        this.priceBase = getPriceGigaForTypeClient(this.typeClient, 1) * profitMarginAndIgv;
       } else if (this.productId >= 2 && this.productId <= 9) {
 
-        this.priceBase = getPriceVinylForTypeClient(this.productId, this.typeClient, this.priceBaseVinil) * (1.18) * (1 + (this.myCart?.customer?.type_client?.margin ?? 0));
-        // console.log('Precio Base Vinil:', this.priceBase);
+        this.priceBase = getPriceVinylForTypeClient(this.productId, this.typeClient, this.priceBaseVinil);
+        this.priceBase = this.priceBase * profitMarginAndIgv;
+
       }
       this.priceBase = Math.round(this.priceBase * 10) / 10; // Redondear a un decimal
       const extraOptions = this.allProducts.find(product => product.id === this.productId)?.extra_options ?? [];
@@ -447,7 +450,9 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
     if (this.productId === 1) {
       this.priceBase = getPriceGigaForTypeClient(type_client, 1) * (1.18) * (1 + (customer?.type_client?.margin ?? 0));
     } else if (this.productId >= 2 && this.productId <= 9) {
-      this.priceBase = getPriceVinylForTypeClient(this.productId, type_client, this.priceBaseVinil) * (1.18) * (1 + (customer?.type_client?.margin ?? 0));
+      this.priceBase = getPriceVinylForTypeClient(this.productId, type_client, this.priceBaseVinil);
+      this.priceBase = Math.round(this.priceBase * 10) / 10; // Redondear a un decimal
+      this.priceBase = this.priceBase * (1.18) * (1 + (customer?.type_client?.margin ?? 0));
     }
     this.priceBase = Math.round(this.priceBase * 10) / 10; // Redondear a un decimal
   }
@@ -495,8 +500,11 @@ export class ExtraOptionList implements OnInit, AfterViewInit {
 
     this.height = this.meterLinearTroquelado / 1000;
 
-    const subtotal = Math.round((this.meterLinearTroquelado * this.priceBase / 1000) * 10) / 10;
+    const subtotal = Math.round((this.height * getPriceVinylForTypeClient(this.productId, this.typeClient, this.priceBaseVinil) * 1.18 * (1 + (this.myCart?.customer?.type_client?.margin ?? 0))) * 10) / 10;
 
+
+    console.log('height Troquelado:', this.height);
+    console.log('subtotal no math:', this.height * this.priceBase);
     console.log('Subtotal Troquelado:', subtotal);
     console.log(' Metro Lineal Troquelado:', this.meterLinearTroquelado);
     console.log('productBase:', this.priceBase);

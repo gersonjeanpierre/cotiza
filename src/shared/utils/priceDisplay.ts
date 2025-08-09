@@ -101,23 +101,19 @@ export const getProductPrice = (
   let productPriceFinal = productPrice;
   let mount = 0;
   if (productId == 1) {
-    if (height <= 1) {
-      height = 1;
-    }
-    if (width <= 1) {
-      width = 1;
-    }
-    const area = Number((height * width).toFixed(2));
-    productPriceFinal =
-      getPriceGigaForTypeClient(typeClient, quantity) * profitMarginAndIgv;
+
+    if (height <= 1) height = 1;
+    if (width <= 1) width = 1;
+
+    const area = (height * width);
+    productPriceFinal = getPriceGigaForTypeClient(typeClient, quantity);
     productPriceFinal = Math.round(productPriceFinal * 10) / 10; //
-    mount = productPriceFinal * area;
+    mount = productPriceFinal * area * profitMarginAndIgv;
+
   } else if (productId >= 2 && productId <= 9) {
-    productPriceFinal =
-      getPriceVinylForTypeClient(productId, typeClient, productPrice) *
-      profitMarginAndIgv;
-    productPriceFinal = Math.round(productPriceFinal * 10) / 10; // Redondear a dos decimales
-    mount = productPriceFinal * height;
+    productPriceFinal = getPriceVinylForTypeClient(productId, typeClient, productPrice);
+    mount = productPriceFinal * height * profitMarginAndIgv;
+
   }
   mount = Math.round(mount * 10) / 10; // Redondear a dos decimales
   return mount;
@@ -177,6 +173,7 @@ export const getPriceExtraOption = (
   }
   if (extra_option_id >= 5 && extra_option_id <= 8) {
     priceExtraOption = (price ?? 0) * (linear_meter ?? 0);
+    priceExtraOption = Math.round(priceExtraOption * 10) / 10; // Redondear a dos decimales
   }
 
   if (extra_option_id >= 15 && extra_option_id <= 21) {
