@@ -26,6 +26,25 @@ export const getPriceGigaForTypeClient = (
 
   return precio;
 }
+
+export const truePriceGigan = (
+  tipo_cliente: string, cantidad: number
+): number => {
+  let precio = 0;
+  if (tipo_cliente === "Cliente Final Nuevo")
+    precio = 20.00;
+  if (tipo_cliente === "Cliente Final Frecuente")
+    precio = 17.00;
+  if (tipo_cliente === "Cliente Imprentero Nuevo")
+    precio = 12.00;
+  if (tipo_cliente === "Cliente Imprentero Frecuente")
+    precio = 10.00;
+
+  return precio;
+}
+
+
+
 /**
 5,Termosellado,1,2.00,final
 6,Pita y Tubo,1,5.00,final
